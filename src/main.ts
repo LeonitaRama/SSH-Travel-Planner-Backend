@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,6 +9,7 @@ async function bootstrap() {
     .setTitle('SSH Travel Planner API')
     .setDescription('API documentation for SSH Travel Planner Backend')
     .setVersion('1.0')
+    .addBearerAuth() //for JWT later
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
