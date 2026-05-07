@@ -7,19 +7,20 @@ datasource db {
 }
 
 model Tenant {
-  id        String          @id @default(uuid())
-  name      String
-  slug      String          @unique
-  createdAt DateTime        @default(now())
-  settings  TenantSettings?
-  users     User[]
+  id            String          @id @default(uuid())
+  name          String
+  slug          String          @unique // E lëmë për public URL, por jo për header
+  createdAt     DateTime        @default(now())
+  settings      TenantSettings?
+  users         User[]
+  refreshTokens RefreshToken[]
 }
 
 model TenantSettings {
   id       String  @id @default(uuid())
   tenantId String  @unique
   theme    String?
-  tenant   Tenant  @relation(fields: [tenantId], references: [id])
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -29,18 +30,29 @@ model User {
   password      String
   tenantId      String
   role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
   refreshTokens RefreshToken[]
-  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([email, tenantId]) // Lejon të njëjtin email në tenante të ndryshme, por unik brenda një tenanti
+  @@index([tenantId])
 }
 
 model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique
   userId    String
+  tenantId  String
   createdAt DateTime @default(now())
   expiresAt DateTime
-  
-  user      User     @relation(fields: [userId], references: [id])
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([token])
+  @@index([expiresAt])
 }
 
 model Destination {
