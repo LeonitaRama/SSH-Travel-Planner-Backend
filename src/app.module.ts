@@ -11,6 +11,7 @@ import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,17 +29,13 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(TenantMiddleware)
-      // Përjashtojmë krijimin e agjencive të reja nga middleware nëse duam
-      // .exclude({ path: 'tenants', method: RequestMethod.POST })
       .exclude(
-        { path: '', method: RequestMethod.GET },
-        { path: 'api', method: RequestMethod.ALL },
-        { path: 'api/', method: RequestMethod.ALL },
-        { path: 'api/v1/tenants', method: RequestMethod.ALL },
-        { path: 'api/v1/tenants/:slug', method: RequestMethod.GET },
+        { path: '/', method: RequestMethod.GET }, // Përjashton faqen kryesore
+        { path: 'api', method: RequestMethod.GET }, // Përjashton Swagger-in
+        { path: 'api/(.*)', method: RequestMethod.GET }, // Përjashton asetet e Swagger
+        { path: 'api/v1/tenants', method: RequestMethod.POST }, // Lejon krijimin e tenantit
+        { path: 'api/v1/tenants/slug/:slug', method: RequestMethod.GET },
       )
-
-      // E aplikojmë te të gjitha rrugët e tjera
       .forRoutes('*');
   }
 }
