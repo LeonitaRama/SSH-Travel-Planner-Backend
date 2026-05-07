@@ -19,6 +19,10 @@ async function bootstrap() {
     .setDescription('API documentation for SSH Travel Planner Backend')
     .setVersion('1.0')
     .addBearerAuth() //for JWT later
+    .addApiKey(
+      { type: 'apiKey', name: 'x-tenant-id', in: 'header' },
+      'tenant-id',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
