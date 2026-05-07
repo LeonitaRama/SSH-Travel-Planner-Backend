@@ -25,7 +25,8 @@ model TenantSettings {
 
 model User {
   id            String         @id @default(uuid())
-  email         String
+  username String?
+  email         String         @unique
   password      String
   tenantId      String
   role          Role           @default(USER)
