@@ -43,6 +43,15 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id])
 }
 
+model Destination {
+  id          String   @id @default(uuid())
+  name        String
+  country     String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+}
+
 enum Role {
   USER
   ADMIN

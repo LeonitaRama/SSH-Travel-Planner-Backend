@@ -11,6 +11,7 @@ import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
+import { DestinationsModule } from './modules/destinations/destinations.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +21,7 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
     PrismaModule,
     TenantsModule,
     UsersModule,
+    DestinationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
