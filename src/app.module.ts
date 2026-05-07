@@ -30,7 +30,10 @@ export class AppModule implements NestModule {
     consumer
       .apply(TenantMiddleware)
       .exclude(
-        { path: 'api/v1/tenants', method: RequestMethod.POST },
+        { path: '/', method: RequestMethod.GET }, // Përjashton faqen kryesore
+        { path: 'api', method: RequestMethod.GET }, // Përjashton Swagger-in
+        { path: 'api/(.*)', method: RequestMethod.GET }, // Përjashton asetet e Swagger
+        { path: 'api/v1/tenants', method: RequestMethod.POST }, // Lejon krijimin e tenantit
         { path: 'api/v1/tenants/slug/:slug', method: RequestMethod.GET },
       )
       .forRoutes('*');
