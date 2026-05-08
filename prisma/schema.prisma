@@ -38,6 +38,14 @@ model User {
   @@index([tenantId])
 }
 
+model Flight {
+  id          String @id @default(uuid())
+  from        String
+  to          String
+  price       Float
+  departureAt DateTime
+}
+
 model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique
