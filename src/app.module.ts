@@ -12,6 +12,7 @@ import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
 import { FlightsModule } from './modules/flights/flights.module.js';
+import { BookingsModule } from './modules/bookings/bookings.module.js';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { FlightsModule } from './modules/flights/flights.module.js';
     TenantsModule,
     UsersModule,
     FlightsModule,
+    BookingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -25,7 +25,7 @@ model TenantSettings {
 
 model User {
   id            String         @id @default(uuid())
-  username String?
+  username      String?
   email         String         @unique
   password      String
   tenantId      String
@@ -33,17 +33,42 @@ model User {
   createdAt     DateTime       @default(now())
   refreshTokens RefreshToken[]
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bookings      Booking[]
 
   @@unique([email, tenantId]) // Lejon të njëjtin email në tenante të ndryshme, por unik brenda një tenanti
   @@index([tenantId])
 }
 
+model Hotel {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  description String?
+  createdAt   DateTime @default(now())
+
+  bookings Booking[]
+}
+
 model Flight {
-  id          String @id @default(uuid())
+  id          String    @id @default(uuid())
   from        String
   to          String
   price       Float
   departureAt DateTime
+  bookings    Booking[]
+}
+
+model Booking {
+  id       String   @id @default(cuid())
+  userId   String
+  flightId String
+  hotelId  String?
+  date     DateTime
+  status   String?
+
+  user   User   @relation(fields: [userId], references: [id])
+  flight Flight @relation(fields: [flightId], references: [id])
+  hotel  Hotel? @relation(fields: [hotelId], references: [id])
 }
 
 model RefreshToken {

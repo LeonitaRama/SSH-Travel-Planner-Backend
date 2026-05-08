@@ -9,6 +9,7 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   private _flight: any;
+    booking: any;
   public get flight(): any {
     return this._flight;
   }
