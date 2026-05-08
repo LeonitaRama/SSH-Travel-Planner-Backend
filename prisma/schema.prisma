@@ -39,6 +39,17 @@ model User {
   @@index([tenantId])
 }
 
+model Destination {
+  id          Int       @id @default(autoincrement())
+  name        String
+  country     String
+  description String
+  image       String?
+  tenantId    Int
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  hotels      Hotel[]
+}
+
 model Hotel {
   id          String   @id @default(cuid())
   name        String
