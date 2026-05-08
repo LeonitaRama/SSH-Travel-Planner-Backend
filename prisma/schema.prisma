@@ -38,6 +38,13 @@ model User {
   @@index([tenantId])
 }
 
+model Hotel {
+  id          String @id @default(uuid())
+  name        String
+  location    String
+  description String?
+}
+
 model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique

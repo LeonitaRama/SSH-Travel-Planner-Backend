@@ -11,6 +11,7 @@ import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
+import { HotelsModule } from './modules/hotels/hotels.module.js';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
     PrismaModule,
     TenantsModule,
     UsersModule,
+    HotelsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

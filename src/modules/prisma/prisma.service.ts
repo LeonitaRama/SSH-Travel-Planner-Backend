@@ -8,6 +8,13 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  private _hotel: any;
+  public get hotel(): any {
+    return this._hotel;
+  }
+  public set hotel(value: any) {
+    this._hotel = value;
+  }
   constructor() {
     // 1. Krijojmë pool-in e lidhjes
     const pool = new pg.Pool({
