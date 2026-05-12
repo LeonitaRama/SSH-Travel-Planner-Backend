@@ -1,16 +1,23 @@
+// src/app.module.ts (i plotësuar me middleware)
 import {
   Module,
   NestModule,
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
 import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
+import { RolesGuard } from './common/guards/roles.guard.js';
+import { LoggingMiddleware } from './common/middleware/logging.middleware.js';
+import { RateLimitMiddleware } from './common/middleware/rate-limit.middleware.js';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 
 @Module({
   imports: [
@@ -21,20 +28,33 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
     PrismaModule,
     TenantsModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard, // Autentikimi global
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard, // Autorizimi global
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(TenantMiddleware)
+      .apply(LoggingMiddleware, RateLimitMiddleware, TenantMiddleware) // Order matters!
       .exclude(
-        { path: '/', method: RequestMethod.GET }, // Përjashton faqen kryesore
-        { path: 'api', method: RequestMethod.GET }, // Përjashton Swagger-in
-        { path: 'api/(.*)', method: RequestMethod.GET }, // Përjashton asetet e Swagger
-        { path: 'api/v1/tenants', method: RequestMethod.POST }, // Lejon krijimin e tenantit
+        { path: '/', method: RequestMethod.GET },
+        { path: 'api', method: RequestMethod.GET },
+        { path: 'api/(.*)', method: RequestMethod.GET },
+        { path: 'api/v1/tenants', method: RequestMethod.POST },
         { path: 'api/v1/tenants/slug/:slug', method: RequestMethod.GET },
+        { path: 'auth/register', method: RequestMethod.POST }, // Përjashto register nga tenant middleware
+        { path: 'auth/login', method: RequestMethod.POST }, // Përjashto login nga tenant middleware
       )
       .forRoutes('*');
   }

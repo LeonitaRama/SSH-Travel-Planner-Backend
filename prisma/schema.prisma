@@ -24,17 +24,18 @@ model TenantSettings {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  username String?
-  email         String         @unique
+  id            String   @id @default(uuid())
+  email         String
+  username      String?
   password      String
   tenantId      String
-  role          Role           @default(USER)
-  createdAt     DateTime       @default(now())
+  role          Role     @default(CUSTOMER)  // ← Default CUSTOMER
+  createdAt     DateTime @default(now())
+  
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   refreshTokens RefreshToken[]
-  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@unique([email, tenantId]) // Lejon të njëjtin email në tenante të ndryshme, por unik brenda një tenanti
+  
+  @@unique([email, tenantId])
   @@index([tenantId])
 }
 
@@ -56,7 +57,8 @@ model RefreshToken {
 }
 
 enum Role {
-  USER
-  ADMIN
-  SUPER_ADMIN
+  CUSTOMER     // Klient i zakonshëm - mund të rezervojë
+  STAFF        // Staf - mund të menaxhojë rezervimet
+  ADMIN        // Admin - mund të menaxhojë agjencinë
+  SUPER_ADMIN  // Super Admin - mund të menaxhojë të gjitha agjencitë
 }

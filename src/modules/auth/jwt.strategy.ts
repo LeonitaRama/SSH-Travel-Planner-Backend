@@ -1,4 +1,4 @@
-// src/modules/auth/jwt.strategy.ts
+// src/modules/auth/jwt.strategy.ts (i plotësuar)
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -14,15 +14,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // Verifiko që user-i ekziston ende
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {
         id: true,
         email: true,
+        username: true, // ← SHTUAR
         role: true,
         tenantId: true,
-        // isActive: true,  // ← KOMENTOJE OSE FSHIJE (nuk ekziston në schema)
+        // isActive: true,
       },
     });
 
@@ -30,13 +30,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found');
     }
 
-    // if (!user.isActive) {  // ← KOMENTOJE OSE FSHIJE KETE
-    //   throw new UnauthorizedException('User is inactive');
+    // if (!user.isActive) {
+    //   throw new UnauthorizedException('User account is inactive');
     // }
 
     return {
       sub: user.id,
       email: user.email,
+      username: user.username, // ← SHTUAR
       role: user.role,
       tenantId: user.tenantId,
     };

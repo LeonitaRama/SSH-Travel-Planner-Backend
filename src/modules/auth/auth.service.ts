@@ -41,13 +41,14 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    // src/modules/auth/auth.service.ts (rreshti 50)
     const user = await this.prisma.user.create({
       data: {
         username: dto.username,
         email: dto.email,
         password: hashedPassword,
         tenantId: dto.tenantId,
-        role: 'USER',
+        role: 'CUSTOMER', // ← Ndrysho nga 'USER' në 'CUSTOMER'
       },
       select: {
         id: true,
@@ -58,7 +59,6 @@ export class AuthService {
         createdAt: true,
       },
     });
-
     // Krijo token
     const token = this.jwt.sign({
       sub: user.id,
@@ -142,5 +142,42 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async logout(userId: string) {
+    // Fshij të gjitha refresh token-at për këtë user
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
+
+    return { message: 'Logged out successfully' };
+  }
+
+  async refreshToken(refreshToken: string) {
+    // Gjej refresh token-in në database
+    const tokenRecord = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: { user: true },
+    });
+
+    if (!tokenRecord) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    // Kontrollo nëse ka skaduar
+    if (tokenRecord.expiresAt < new Date()) {
+      await this.prisma.refreshToken.delete({ where: { id: tokenRecord.id } });
+      throw new UnauthorizedException('Refresh token expired');
+    }
+
+    // Gjenero token të ri
+    const newToken = this.jwt.sign({
+      sub: tokenRecord.user.id,
+      email: tokenRecord.user.email,
+      role: tokenRecord.user.role,
+      tenantId: tokenRecord.user.tenantId,
+    });
+
+    return { access_token: newToken };
   }
 }

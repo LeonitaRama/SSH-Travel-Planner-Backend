@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { BaseTenantService } from '../../common/services/base-tenant.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
-import { UserRole } from './dto/role.enum.js';
+import { Role } from '../../common/enums/role.enum.js';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -64,6 +64,7 @@ export class UsersService extends BaseTenantService {
     return user;
   }
 
+  // src/modules/users/users.service.ts (rreshti 74)
   async create(tenantId: string, dto: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -71,7 +72,7 @@ export class UsersService extends BaseTenantService {
       data: {
         email: dto.email,
         password: hashedPassword,
-        role: dto.role || UserRole.USER,
+        role: dto.role || Role.CUSTOMER, // ← Ndrysho nga Role.USER në Role.CUSTOMER
         tenantId: tenantId,
       },
       select: {

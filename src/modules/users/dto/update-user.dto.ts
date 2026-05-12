@@ -8,7 +8,7 @@ import {
   IsEmail,
   IsEnum,
 } from 'class-validator';
-import { UserRole } from './role.enum.js';
+import { Role } from '../../../common/enums/role.enum.js';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty({ example: 'newemail@example.com', required: false })
@@ -22,8 +22,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @MinLength(6)
   password?: string;
 
-  @ApiProperty({ enum: UserRole, required: false })
+  @ApiProperty({ enum: Role, required: false })
   @IsOptional()
-  @IsEnum(UserRole)
-  role?: UserRole;
+  @IsEnum(Role)
+  role?: Role;
 }
