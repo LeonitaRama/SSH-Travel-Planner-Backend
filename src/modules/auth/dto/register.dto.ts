@@ -15,5 +15,5 @@ export class RegisterDto {
   @MinLength(6)
   password!: string;
 
-  tenantId!: number;
+  tenantId!: string;
 }
