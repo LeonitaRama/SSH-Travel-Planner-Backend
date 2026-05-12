@@ -10,19 +10,17 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    // Kontrollo që DATABASE_URL ekziston
     if (!process.env.DATABASE_URL) {
       throw new Error('DATABASE_URL is not defined in .env file');
     }
 
     const pool = new pg.Pool({
       connectionString: process.env.DATABASE_URL,
-      // Shto këto për debug
       ssl: false,
     });
 
     const adapter = new PrismaPg(pool);
-    super({ adapter });
+    super();
   }
 
   async onModuleInit() {

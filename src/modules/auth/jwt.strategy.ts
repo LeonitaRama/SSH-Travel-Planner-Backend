@@ -3,6 +3,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { Role } from '../auth/enums/role.enum.js';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: Role;
+  tenantId: string;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,8 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
-    // Verifiko që user-i ekziston ende
+  async validate(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {
@@ -22,7 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         email: true,
         role: true,
         tenantId: true,
-        // isActive: true,  // ← KOMENTOJE OSE FSHIJE (nuk ekziston në schema)
+        username: true,
       },
     });
 
@@ -30,15 +37,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found');
     }
 
-    // if (!user.isActive) {  // ← KOMENTOJE OSE FSHIJE KETE
-    //   throw new UnauthorizedException('User is inactive');
-    // }
+    // Konverto rolin nga string në enum
+    const userRole = user.role as Role;
 
     return {
       sub: user.id,
       email: user.email,
-      role: user.role,
+      role: userRole,
       tenantId: user.tenantId,
+      username: user.username,
     };
   }
 }

@@ -11,7 +11,8 @@ import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
-
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './common/guards/roles.guard.js';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +25,15 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
   ],
   controllers: [AppController],
   providers: [AppService],
+})
+@Module({
+  // ... imports të tjera
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

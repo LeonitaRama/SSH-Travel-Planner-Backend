@@ -1,26 +1,15 @@
 // prisma/seed.ts
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
-import 'dotenv/config';
+import { PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-// Konfiguro lidhjen me databazë
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 ========================================');
   console.log('🌱 Starting database seeding...');
   console.log('🌱 ========================================\n');
 
-  // ============================================
-  // KRIJO TENANT-IN E PARË (DEFAULT)
-  // ============================================
+  // Step 1: Krijo tenant default
   console.log('📌 Step 1: Creating default tenant...');
 
   const tenant = await prisma.tenant.upsert({
@@ -37,27 +26,20 @@ async function main() {
   console.log(`   Name: ${tenant.name}`);
   console.log(`   Slug: ${tenant.slug}\n`);
 
-  // ============================================
-  // KRIJO ADMIN USER-IN E PARË
-  // ============================================
+  // Step 2: Krijo admin user
   console.log('📌 Step 2: Creating admin user...');
 
   const hashedPassword = await bcrypt.hash('admin123', 10);
 
   const admin = await prisma.user.upsert({
-    where: {
-      email_tenantId: {
-        email: 'admin@travel.com',
-        tenantId: tenant.id,
-      },
-    },
+    where: { email: 'admin@travel.com' },
     update: {},
     create: {
       email: 'admin@travel.com',
       username: 'admin',
       password: hashedPassword,
       tenantId: tenant.id,
-      role: 'SUPER_ADMIN',
+      role: Role.SUPER_ADMIN, // Përdor enum-in e Prisma-s, jo string
     },
   });
 
@@ -67,67 +49,82 @@ async function main() {
   console.log(`   Username: ${admin.username}`);
   console.log(`   Role: ${admin.role}\n`);
 
-  // ============================================
-  // KRIJO DISA USER TEST PËR TENANT-IN
-  // ============================================
+  // Step 3: Krijo disa usera testues
   console.log('📌 Step 3: Creating test users...');
 
-  const testPassword = await bcrypt.hash('test123', 10);
+  const testUsers = [
+    {
+      email: 'user1@travel.com',
+      username: 'user1',
+      role: Role.USER,
+    },
+    {
+      email: 'user2@travel.com',
+      username: 'user2',
+      role: Role.USER,
+    },
+    {
+      email: 'admin2@travel.com',
+      username: 'admin2',
+      role: Role.ADMIN,
+    },
+  ];
 
-  const testUser = await prisma.user.upsert({
-    where: {
-      email_tenantId: {
-        email: 'user@travel.com',
+  for (const userData of testUsers) {
+    const hashedUserPassword = await bcrypt.hash('password123', 10);
+
+    await prisma.user.upsert({
+      where: { email: userData.email },
+      update: {},
+      create: {
+        email: userData.email,
+        username: userData.username,
+        password: hashedUserPassword,
         tenantId: tenant.id,
+        role: userData.role, // Tani përdor enum
       },
-    },
-    update: {},
-    create: {
-      email: 'user@travel.com',
-      username: 'testuser',
-      password: testPassword,
-      tenantId: tenant.id,
-      role: 'USER',
-    },
-  });
+    });
 
-  console.log(`✅ Test user created:`);
-  console.log(`   Email: ${testUser.email}`);
-  console.log(`   Username: ${testUser.username}`);
-  console.log(`   Role: ${testUser.role}\n`);
+    console.log(`   ✅ Created user: ${userData.email} (${userData.role})`);
+  }
 
-  // ============================================
-  // STATISTIKAT E FUNDIT
-  // ============================================
-  console.log('📊 ========================================');
-  console.log('📊 Seeding completed successfully!');
-  console.log('📊 ========================================');
-  console.log(`\n📝 Summary:`);
-  console.log(`   • 1 Tenant created`);
-  console.log(`   • 2 Users created (1 admin, 1 regular)`);
-  console.log(`\n🔐 Login credentials:`);
-  console.log(`   Admin: admin@travel.com / admin123`);
-  console.log(`   User:  user@travel.com / test123`);
-  console.log(`\n📌 Tenant ID: ${tenant.id}`);
-  console.log(`\n🚀 You can now test the API:`);
-  console.log(`   Swagger: http://localhost:3000/api`);
-  console.log(`   Create tenant: POST /api/v1/tenants`);
-  console.log(
-    `   Register user: POST /auth/register (with x-tenant-id header)`,
-  );
-  console.log(`   Login: POST /auth/login (with x-tenant-id header)`);
+  // Step 4: Shto një user me rolin TENANT_ADMIN (nëse e ke në skemë)
+  if (Object.values(Role).includes('TENANT_ADMIN' as any)) {
+    console.log('\n📌 Step 4: Creating tenant admin user...');
+
+    const hashedTenantAdminPassword = await bcrypt.hash('tenantadmin123', 10);
+
+    await prisma.user.upsert({
+      where: { email: 'tenantadmin@travel.com' },
+      update: {},
+      create: {
+        email: 'tenantadmin@travel.com',
+        username: 'tenantadmin',
+        password: hashedTenantAdminPassword,
+        tenantId: tenant.id,
+        role: Role.ADMIN, // Përdor ADMIN nëse TENANT_ADMIN nuk ekziston
+      },
+    });
+
+    console.log(`   ✅ Created user: tenantadmin@travel.com (TENANT_ADMIN)`);
+  }
+
+  console.log('\n🌱 ========================================');
+  console.log('🌱 Seeding completed successfully!');
+  console.log('🌱 ========================================');
+  console.log('\n📝 Test credentials:');
+  console.log('   Admin: admin@travel.com / admin123');
+  console.log('   User1: user1@travel.com / password123');
+  console.log('   User2: user2@travel.com / password123');
+  console.log('   Admin2: admin2@travel.com / password123');
 }
 
-// ============================================
-// EKZEKUTO SEEDING
-// ============================================
 main()
   .catch((e) => {
     console.error('\n❌ Seeding failed!');
-    console.error('Error:', e.message);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });

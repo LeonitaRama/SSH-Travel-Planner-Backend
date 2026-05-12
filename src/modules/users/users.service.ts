@@ -70,6 +70,7 @@ export class UsersService extends BaseTenantService {
     return this.prisma.user.create({
       data: {
         email: dto.email,
+        username: dto.username,
         password: hashedPassword,
         role: dto.role || UserRole.USER,
         tenantId: tenantId,
@@ -77,6 +78,7 @@ export class UsersService extends BaseTenantService {
       select: {
         id: true,
         email: true,
+        username: true,
         role: true,
         createdAt: true,
       },
