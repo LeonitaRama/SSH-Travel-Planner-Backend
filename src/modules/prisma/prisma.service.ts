@@ -1,3 +1,4 @@
+// src/modules/prisma/prisma.service.ts
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -9,15 +10,18 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    // 1. Krijojmë pool-in e lidhjes
+    // Kontrollo që DATABASE_URL ekziston
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL is not defined in .env file');
+    }
+
     const pool = new pg.Pool({
       connectionString: process.env.DATABASE_URL,
+      // Shto këto për debug
+      ssl: false,
     });
 
-    // 2. Krijojmë adapterin për Prisma 7
     const adapter = new PrismaPg(pool);
-
-    // 3. Kalojmë adapterin te PrismaClient
     super({ adapter });
   }
 
