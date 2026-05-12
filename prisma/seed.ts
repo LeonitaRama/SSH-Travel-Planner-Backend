@@ -1,4 +1,4 @@
-// prisma/seed.ts
+// prisma/seed.ts (versioni i plotë i korrigjuar)
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
@@ -38,11 +38,11 @@ async function main() {
   console.log(`   Slug: ${tenant.slug}\n`);
 
   // ============================================
-  // KRIJO ADMIN USER-IN E PARË
+  // KRIJO SUPER ADMIN USER-IN E PARË
   // ============================================
-  console.log('📌 Step 2: Creating admin user...');
+  console.log('📌 Step 2: Creating super admin user...');
 
-  const hashedPassword = await bcrypt.hash('admin123', 10);
+  const adminPassword = await bcrypt.hash('admin123', 10);
 
   const admin = await prisma.user.upsert({
     where: {
@@ -55,46 +55,100 @@ async function main() {
     create: {
       email: 'admin@travel.com',
       username: 'admin',
-      password: hashedPassword,
+      password: adminPassword,
       tenantId: tenant.id,
       role: 'SUPER_ADMIN',
     },
   });
 
-  console.log(`✅ Admin user created:`);
+  console.log(`✅ Super Admin user created:`);
   console.log(`   ID: ${admin.id}`);
   console.log(`   Email: ${admin.email}`);
   console.log(`   Username: ${admin.username}`);
   console.log(`   Role: ${admin.role}\n`);
 
   // ============================================
-  // KRIJO DISA USER TEST PËR TENANT-IN
+  // KRIJO ADMIN PËR TENANT-IN
   // ============================================
-  console.log('📌 Step 3: Creating test users...');
+  console.log('📌 Step 3: Creating tenant admin user...');
 
-  const testPassword = await bcrypt.hash('test123', 10);
-
-  const testUser = await prisma.user.upsert({
+  const tenantAdmin = await prisma.user.upsert({
     where: {
       email_tenantId: {
-        email: 'user@travel.com',
+        email: 'tenant-admin@travel.com',
         tenantId: tenant.id,
       },
     },
     update: {},
     create: {
-      email: 'user@travel.com',
-      username: 'testuser',
-      password: testPassword,
+      email: 'tenant-admin@travel.com',
+      username: 'tenantadmin',
+      password: adminPassword,
       tenantId: tenant.id,
-      role: 'USER',
+      role: 'ADMIN',
     },
   });
 
-  console.log(`✅ Test user created:`);
+  console.log(`✅ Tenant Admin user created:`);
+  console.log(`   Email: ${tenantAdmin.email}`);
+  console.log(`   Username: ${tenantAdmin.username}`);
+  console.log(`   Role: ${tenantAdmin.role}\n`);
+
+  // ============================================
+  // KRIJO CUSTOMER TEST PËR TENANT-IN
+  // ============================================
+  console.log('📌 Step 4: Creating test customer...');
+
+  const customerPassword = await bcrypt.hash('test123', 10);
+
+  const testUser = await prisma.user.upsert({
+    where: {
+      email_tenantId: {
+        email: 'customer@travel.com',
+        tenantId: tenant.id,
+      },
+    },
+    update: {},
+    create: {
+      email: 'customer@travel.com',
+      username: 'customer',
+      password: customerPassword,
+      tenantId: tenant.id,
+      role: 'CUSTOMER', // ← E RREGULLUAR!!!
+    },
+  });
+
+  console.log(`✅ Test customer created:`);
   console.log(`   Email: ${testUser.email}`);
   console.log(`   Username: ${testUser.username}`);
   console.log(`   Role: ${testUser.role}\n`);
+
+  // ============================================
+  // KRIJO STAFF USER PËR TENANT-IN
+  // ============================================
+  console.log('📌 Step 5: Creating staff user...');
+
+  const staffUser = await prisma.user.upsert({
+    where: {
+      email_tenantId: {
+        email: 'staff@travel.com',
+        tenantId: tenant.id,
+      },
+    },
+    update: {},
+    create: {
+      email: 'staff@travel.com',
+      username: 'staffmember',
+      password: customerPassword,
+      tenantId: tenant.id,
+      role: 'STAFF',
+    },
+  });
+
+  console.log(`✅ Staff user created:`);
+  console.log(`   Email: ${staffUser.email}`);
+  console.log(`   Username: ${staffUser.username}`);
+  console.log(`   Role: ${staffUser.role}\n`);
 
   // ============================================
   // STATISTIKAT E FUNDIT
@@ -102,20 +156,26 @@ async function main() {
   console.log('📊 ========================================');
   console.log('📊 Seeding completed successfully!');
   console.log('📊 ========================================');
+
+  const userCount = await prisma.user.count();
   console.log(`\n📝 Summary:`);
   console.log(`   • 1 Tenant created`);
-  console.log(`   • 2 Users created (1 admin, 1 regular)`);
+  console.log(
+    `   • ${userCount} users created (1 super admin, 1 tenant admin, 1 staff, 1 customer)`,
+  );
   console.log(`\n🔐 Login credentials:`);
-  console.log(`   Admin: admin@travel.com / admin123`);
-  console.log(`   User:  user@travel.com / test123`);
+  console.log(
+    `   Super Admin: admin@travel.com / admin123 (role: SUPER_ADMIN)`,
+  );
+  console.log(
+    `   Tenant Admin: tenant-admin@travel.com / admin123 (role: ADMIN)`,
+  );
+  console.log(`   Staff: staff@travel.com / test123 (role: STAFF)`);
+  console.log(`   Customer: customer@travel.com / test123 (role: CUSTOMER)`);
   console.log(`\n📌 Tenant ID: ${tenant.id}`);
   console.log(`\n🚀 You can now test the API:`);
   console.log(`   Swagger: http://localhost:3000/api`);
-  console.log(`   Create tenant: POST /api/v1/tenants`);
-  console.log(
-    `   Register user: POST /auth/register (with x-tenant-id header)`,
-  );
-  console.log(`   Login: POST /auth/login (with x-tenant-id header)`);
+  console.log(`   Login with different roles to test authorization!\n`);
 }
 
 // ============================================
