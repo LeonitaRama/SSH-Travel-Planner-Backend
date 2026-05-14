@@ -46,15 +46,18 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(LoggingMiddleware, RateLimitMiddleware, TenantMiddleware) // Order matters!
+      .apply(LoggingMiddleware, RateLimitMiddleware, TenantMiddleware)
       .exclude(
         { path: '/', method: RequestMethod.GET },
         { path: 'api', method: RequestMethod.GET },
-        { path: 'api/(.*)', method: RequestMethod.GET },
+        { path: 'api/*path', method: RequestMethod.GET },
+        // Shto këto:
         { path: 'api/v1/tenants', method: RequestMethod.POST },
+        { path: 'api/v1/tenants', method: RequestMethod.GET },
         { path: 'api/v1/tenants/slug/:slug', method: RequestMethod.GET },
-        { path: 'auth/register', method: RequestMethod.POST }, // Përjashto register nga tenant middleware
-        { path: 'auth/login', method: RequestMethod.POST }, // Përjashto login nga tenant middleware
+        { path: 'auth/register', method: RequestMethod.POST },
+        { path: 'auth/login', method: RequestMethod.POST },
+        { path: 'auth/refresh-token', method: RequestMethod.POST }, // Shto
       )
       .forRoutes('*');
   }

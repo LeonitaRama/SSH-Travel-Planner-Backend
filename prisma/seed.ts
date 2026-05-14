@@ -191,3 +191,97 @@ main()
     await prisma.$disconnect();
     await pool.end();
   });
+
+// src/modules/setup/setup.controller.ts
+// import { Controller, Post, Body } from '@nestjs/common';
+// import { PrismaService } from '../src/modules/prisma/prisma.service.js';
+// import * as bcrypt from 'bcrypt';
+// import { Public } from '../src/common/decorators/public.decorator.js';
+
+// @Controller('setup')
+// export class SetupController {
+//   constructor(private prisma: PrismaService) {}
+
+//   @Public()
+//   @Post('init')
+//   async initializeSystem() {
+//     // Krijo SUPER_ADMIN tenant
+//     const superTenant = await this.prisma.tenant.create({
+//       data: {
+//         name: 'System Admin',
+//         slug: 'system',
+//       },
+//     });
+
+//     // Krijo SUPER_ADMIN user
+//     const hashedPassword = await bcrypt.hash('Admin123!', 10);
+//     const superAdmin = await this.prisma.user.create({
+//       data: {
+//         email: 'superadmin@system.com',
+//         password: hashedPassword,
+//         username: 'superadmin',
+//         role: 'SUPER_ADMIN',
+//         tenantId: superTenant.id,
+//       },
+//     });
+
+//     return {
+//       message: 'System initialized',
+//       tenant: { id: superTenant.id, name: superTenant.name },
+//       user: { email: superAdmin.email, role: superAdmin.role },
+//     };
+//   }
+// }
+///kthejeeee
+// // src/modules/seed/seed.controller.ts
+// import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+// import { PrismaService } from '../src/modules/prisma/prisma.service.js';
+// import * as bcrypt from 'bcrypt';
+// import { Public } from '../src/common/decorators/public.decorator.js';
+// import { ApiTags, ApiOperation } from '@nestjs/swagger';
+
+// @ApiTags('Seed')
+// @Controller('seed')
+// export class SeedController {
+//   constructor(private prisma: PrismaService) {}
+
+//   @Public()
+//   @Post()
+//   @ApiOperation({
+//     summary: 'Initialize system with first tenant and SUPER_ADMIN (dev only)',
+//   })
+//   @HttpCode(HttpStatus.CREATED)
+//   async seed() {
+//     // Kontrollo nëse ekziston ndonjë tenant
+//     const tenantCount = await this.prisma.tenant.count();
+//     if (tenantCount > 0) {
+//       return { message: 'System already initialized' };
+//     }
+
+//     // Krijo tenant-in e parë
+//     const tenant = await this.prisma.tenant.create({
+//       data: {
+//         name: 'System Tenant',
+//         slug: 'system',
+//       },
+//     });
+
+//     // Krijo SUPER_ADMIN user
+//     const hashedPassword = await bcrypt.hash('Admin123!', 10);
+//     const admin = await this.prisma.user.create({
+//       data: {
+//         email: 'superadmin@system.com',
+//         username: 'superadmin',
+//         password: hashedPassword,
+//         role: 'SUPER_ADMIN',
+//         tenantId: tenant.id,
+//       },
+//     });
+
+//     return {
+//       message: 'System initialized successfully',
+//       tenant: { id: tenant.id, name: tenant.name },
+//       admin: { id: admin.id, email: admin.email, role: admin.role },
+//     };
+//   }
+// }

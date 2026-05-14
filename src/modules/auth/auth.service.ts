@@ -1,24 +1,46 @@
 import {
   Injectable,
-  UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { BaseAuthService } from '../../common/services/base-auth.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { Role } from '../../common/enums/role.enum.js';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto'; // Importo për gjenerimin e token-it
 
 @Injectable()
-export class AuthService {
+export class AuthService extends BaseAuthService {
   constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-  ) {}
+    protected prismaService: PrismaService,
+    protected jwtService: JwtService,
+  ) {
+    super(prismaService, jwtService);
+  }
+
+  // Metodë ndihmëse private për të mos përsëritur kodin (DRY)
+  private async createRefreshToken(userId: string, tenantId: string) {
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // Valid për 7 ditë
+
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: userId,
+        tenantId: tenantId,
+        expiresAt: expiresAt,
+      },
+    });
+
+    return refreshToken;
+  }
 
   async register(dto: RegisterDto) {
-    // Verifiko që tenant-i ekziston
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: dto.tenantId },
     });
@@ -27,90 +49,54 @@ export class AuthService {
       throw new NotFoundException('Tenant not found');
     }
 
-    // Verifiko që user-i nuk ekziston në këtë tenant
-    const userExists = await this.prisma.user.findFirst({
+    const existingUser = await this.prisma.user.findFirst({
       where: {
         email: dto.email,
         tenantId: dto.tenantId,
       },
     });
 
-    if (userExists) {
+    if (existingUser) {
       throw new BadRequestException('User already exists in this tenant');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // src/modules/auth/auth.service.ts (rreshti 50)
     const user = await this.prisma.user.create({
       data: {
         username: dto.username,
         email: dto.email,
         password: hashedPassword,
         tenantId: dto.tenantId,
-        role: 'CUSTOMER', // ← Ndrysho nga 'USER' në 'CUSTOMER'
-      },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        tenantId: true,
-        createdAt: true,
+        role: dto.role || Role.CUSTOMER,
       },
     });
-    // Krijo token
-    const token = this.jwt.sign({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      tenantId: user.tenantId,
-    });
+
+    const accessToken = this.generateToken(user);
+    const refreshToken = await this.createRefreshToken(user.id, user.tenantId);
 
     return {
       message: 'User registered successfully',
-      user,
-      access_token: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+      },
+      access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 
   async login(tenantId: string, dto: LoginDto) {
-    // Verifiko që tenant-i ekziston
-    const tenant = await this.prisma.tenant.findUnique({
-      where: { id: tenantId },
-    });
+    const user = await this.validateUser(tenantId, dto.email, dto.password);
 
-    if (!tenant) {
-      throw new NotFoundException('Tenant not found');
-    }
-
-    // Gjej user-in në këtë tenant
-    const user = await this.prisma.user.findFirst({
-      where: {
-        email: dto.email,
-        tenantId: tenantId,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const passwordMatch = await bcrypt.compare(dto.password, user.password);
-
-    if (!passwordMatch) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const token = this.jwt.sign({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      tenantId: user.tenantId,
-    });
+    const accessToken = this.generateToken(user);
+    const refreshToken = await this.createRefreshToken(user.id, user.tenantId);
 
     return {
-      access_token: token,
+      access_token: accessToken,
+      refresh_token: refreshToken,
       user: {
         id: user.id,
         email: user.email,
@@ -120,43 +106,9 @@ export class AuthService {
     };
   }
 
-  async getProfile(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        tenantId: true,
-        createdAt: true,
-        /*bookings: {
-          take: 5,
-          orderBy: { createdAt: 'desc' },
-        },*/
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    return user;
-  }
-
-  async logout(userId: string) {
-    // Fshij të gjitha refresh token-at për këtë user
-    await this.prisma.refreshToken.deleteMany({
-      where: { userId },
-    });
-
-    return { message: 'Logged out successfully' };
-  }
-
-  async refreshToken(refreshToken: string) {
-    // Gjej refresh token-in në database
+  async refreshToken(token: string) {
     const tokenRecord = await this.prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+      where: { token: token },
       include: { user: true },
     });
 
@@ -164,20 +116,35 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    // Kontrollo nëse ka skaduar
     if (tokenRecord.expiresAt < new Date()) {
       await this.prisma.refreshToken.delete({ where: { id: tokenRecord.id } });
       throw new UnauthorizedException('Refresh token expired');
     }
 
-    // Gjenero token të ri
-    const newToken = this.jwt.sign({
-      sub: tokenRecord.user.id,
-      email: tokenRecord.user.email,
-      role: tokenRecord.user.role,
-      tenantId: tokenRecord.user.tenantId,
-    });
+    // Opsionale: Fshijmë tokenin e vjetër (Token Rotation) për siguri më të lartë
+    await this.prisma.refreshToken.delete({ where: { id: tokenRecord.id } });
 
-    return { access_token: newToken };
+    const newAccessToken = this.generateToken(tokenRecord.user);
+    const newRefreshToken = await this.createRefreshToken(
+      tokenRecord.userId,
+      tokenRecord.tenantId,
+    );
+
+    return {
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken,
+    };
+  }
+
+  // Metodat e tjera mbeten të njëjta...
+  async getProfile(userId: string) {
+    return this.getUserFromToken(userId);
+  }
+
+  async logout(userId: string) {
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
+    return { message: 'Logged out successfully' };
   }
 }
