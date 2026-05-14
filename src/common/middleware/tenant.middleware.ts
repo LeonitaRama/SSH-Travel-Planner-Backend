@@ -1,4 +1,3 @@
-// src/common/middleware/tenant.middleware.ts (i plotësuar me logging)
 import {
   Injectable,
   NestMiddleware,
@@ -18,10 +17,10 @@ export class TenantMiddleware implements NestMiddleware {
     const tenantId = req.headers['x-tenant-id'];
     const startTime = Date.now();
 
-    this.logger.debug(`🔍 Validating tenant: ${tenantId}`);
+    this.logger.debug(`Validating tenant: ${tenantId}`);
 
     if (!tenantId) {
-      this.logger.warn('❌ Missing x-tenant-id header');
+      this.logger.warn('Missing x-tenant-id header');
       throw new BadRequestException(
         'Tenant ID header (x-tenant-id) is required',
       );
@@ -31,7 +30,7 @@ export class TenantMiddleware implements NestMiddleware {
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(tenantId)) {
-      this.logger.warn(`❌ Invalid tenant ID format: ${tenantId}`);
+      this.logger.warn(`Invalid tenant ID format: ${tenantId}`);
       throw new BadRequestException('Invalid tenant ID format');
     }
 
@@ -40,7 +39,7 @@ export class TenantMiddleware implements NestMiddleware {
     });
 
     if (!tenant) {
-      this.logger.warn(`❌ Tenant not found: ${tenantId}`);
+      this.logger.warn(`Tenant not found: ${tenantId}`);
       throw new NotFoundException(`Tenant with ID "${tenantId}" not found`);
     }
 
@@ -49,7 +48,7 @@ export class TenantMiddleware implements NestMiddleware {
 
     const duration = Date.now() - startTime;
     this.logger.debug(
-      `✅ Tenant validated: ${tenant.name} (${tenant.id}) - ${duration}ms`,
+      `Tenant validated: ${tenant.name} (${tenant.id}) - ${duration}ms`,
     );
 
     next();

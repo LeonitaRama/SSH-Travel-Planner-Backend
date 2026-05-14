@@ -1,4 +1,3 @@
-// src/common/services/base-tenant.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../modules/prisma/prisma.service.js';
 
@@ -6,17 +5,10 @@ import { PrismaService } from '../../modules/prisma/prisma.service.js';
 export abstract class BaseTenantService {
   constructor(protected readonly prisma: PrismaService) {}
 
-  protected validateTenantAccess(
-    tenantId: string,
-    resourceId: string,
-  ): Promise<boolean> {
-    throw new Error('Method not implemented');
-  }
-
   protected async verifyTenantOwnership(
     tenantId: string,
-    model: string,
     resourceId: string,
+    model: string,
   ): Promise<boolean> {
     switch (model) {
       case 'user':
@@ -24,6 +16,7 @@ export abstract class BaseTenantService {
           where: { id: resourceId, tenantId },
         });
         return !!user;
+      // Shto modele të tjera kur të krijosh (booking, etc.)
       default:
         return false;
     }

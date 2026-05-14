@@ -1,13 +1,11 @@
-// src/common/services/base-crud.service.ts
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { BaseTenantService } from "./base-tenant.service.js";
-import { PrismaService } from "../../modules/prisma/prisma.service.js";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { BaseTenantService } from './base-tenant.service.js';
+import { PrismaService } from '../../modules/prisma/prisma.service.js';
 
 export interface CrudOptions {
   modelName: string;
-  excludeFields?: string[];
-  defaultInclude?: any;
   defaultSelect?: any;
+  defaultInclude?: any;
 }
 
 @Injectable()
@@ -25,35 +23,22 @@ export abstract class BaseCrudService<
 
   async create(tenantId: string, dto: CreateDto): Promise<T> {
     return (this.prisma as any)[this.options.modelName].create({
-      data: {
-        ...dto,
-        tenantId,
-      },
+      data: { ...dto, tenantId } as any,
+      ...(this.options.defaultSelect && { select: this.options.defaultSelect }),
       ...(this.options.defaultInclude && {
         include: this.options.defaultInclude,
       }),
-      ...(this.options.defaultSelect && { select: this.options.defaultSelect }),
     });
   }
 
   async findAll(tenantId: string, filters?: any): Promise<T[]> {
-    const where: any = { tenantId };
-
-    if (filters) {
-      Object.keys(filters).forEach((key) => {
-        if (filters[key]) {
-          where[key] = filters[key];
-        }
-      });
-    }
-
     return (this.prisma as any)[this.options.modelName].findMany({
-      where,
+      where: { tenantId, ...filters },
+      ...(this.options.defaultSelect && { select: this.options.defaultSelect }),
       ...(this.options.defaultInclude && {
         include: this.options.defaultInclude,
       }),
-      ...(this.options.defaultSelect && { select: this.options.defaultSelect }),
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -62,10 +47,10 @@ export abstract class BaseCrudService<
       this.options.modelName
     ].findFirst({
       where: { id, tenantId },
+      ...(this.options.defaultSelect && { select: this.options.defaultSelect }),
       ...(this.options.defaultInclude && {
         include: this.options.defaultInclude,
       }),
-      ...(this.options.defaultSelect && { select: this.options.defaultSelect }),
     });
 
     if (!resource) {
@@ -73,25 +58,20 @@ export abstract class BaseCrudService<
         `${this.options.modelName} with ID ${id} not found`,
       );
     }
-
     return resource;
   }
 
   async update(tenantId: string, id: string, dto: UpdateDto): Promise<T> {
-    await this.findOne(tenantId, id);
+    await this.findOne(tenantId, id); // siguron që ekziston
 
     return (this.prisma as any)[this.options.modelName].update({
       where: { id },
-      data: dto,
-      ...(this.options.defaultInclude && {
-        include: this.options.defaultInclude,
-      }),
+      data: dto as any,
       ...(this.options.defaultSelect && { select: this.options.defaultSelect }),
     });
   }
 
-
-  async remove(tenantId: string, id: string): Promise<{ message: string; id: string }> {
+  async remove(tenantId: string, id: string) {
     await this.findOne(tenantId, id);
 
     await (this.prisma as any)[this.options.modelName].delete({
@@ -99,11 +79,5 @@ export abstract class BaseCrudService<
     });
 
     return { message: `${this.options.modelName} deleted successfully`, id };
-  }
-
-  async count(tenantId: string): Promise<number> {
-    return (this.prisma as any)[this.options.modelName].count({
-      where: { tenantId },
-    });
   }
 }

@@ -1,4 +1,3 @@
-// src/common/middleware/logging.middleware.ts
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
@@ -13,7 +12,7 @@ export class LoggingMiddleware implements NestMiddleware {
 
     // Log request
     this.logger.log(
-      `📥 REQUEST: ${method} ${originalUrl} - IP: ${ip} - Tenant: ${headers['x-tenant-id'] || 'N/A'}`,
+      `REQUEST: ${method} ${originalUrl} - IP: ${ip} - Tenant: ${headers['x-tenant-id'] || 'N/A'}`,
     );
 
     // Log response
@@ -22,7 +21,7 @@ export class LoggingMiddleware implements NestMiddleware {
       const contentLength = res.get('content-length');
       const duration = Date.now() - startTime;
 
-      const logMessage = `📤 RESPONSE: ${method} ${originalUrl} ${statusCode} - ${contentLength || 0}b - ${duration}ms - User-Agent: ${userAgent}`;
+      const logMessage = `RESPONSE: ${method} ${originalUrl} ${statusCode} - ${contentLength || 0}b - ${duration}ms - User-Agent: ${userAgent}`;
 
       if (statusCode >= 500) {
         this.logger.error(logMessage);
