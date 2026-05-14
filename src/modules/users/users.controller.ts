@@ -44,6 +44,10 @@ import { Role } from '../../common/enums/role.enum.js';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // ============================================
+  // GET /users - Listo të gjithë user-at
+  // Vetëm ADMIN dhe SUPER_ADMIN
+  // ============================================
   @Get()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get all users for current tenant' })
@@ -60,6 +64,11 @@ export class UsersController {
     return this.usersService.findAllByTenant(tenantId);
   }
 
+  // ============================================
+  // GET /users/:id - Gjej user-in sipas ID
+  // ADMIN dhe SUPER_ADMIN mund të shohin këdo
+  // CUSTOMER dhe STAFF mund të shohin vetëm veten
+  // ============================================
   @Get(':id')
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get user by ID' })
@@ -84,6 +93,10 @@ export class UsersController {
     return this.usersService.findOne(tenantId, id);
   }
 
+  // ============================================
+  // POST /users - Krijo user të ri
+  // Vetëm SUPER_ADMIN
+  // ============================================
   @Post()
   @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Create new user' })
@@ -99,6 +112,11 @@ export class UsersController {
     return this.usersService.create(tenantId, dto);
   }
 
+  // ============================================
+  // PATCH /users/:id - Përditëso user-in
+  // CUSTOMER dhe STAFF: vetëm veten
+  // ADMIN dhe SUPER_ADMIN: mund të përditësojnë këdo
+  // ============================================
   @Patch(':id')
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update user' })
@@ -129,6 +147,10 @@ export class UsersController {
     return this.usersService.update(tenantId, id, dto);
   }
 
+  // ============================================
+  // DELETE /users/:id - Fshi user-in
+  // Vetëm SUPER_ADMIN
+  // ============================================
   @Delete(':id')
   @Roles(Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Delete user' })
