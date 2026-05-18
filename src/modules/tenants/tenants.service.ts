@@ -1,4 +1,3 @@
-// src/modules/tenants/tenants.service.ts
 import {
   Injectable,
   NotFoundException,
@@ -6,13 +5,15 @@ import {
 } from '@nestjs/common';
 import { CreateTenantDto } from './dto/create-tenant.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-
+import * as bcrypt from 'bcrypt'; // Shto këtë import për fjalëkalimin
+import { Role } from '../../common/enums/role.enum.js'; // Importo Enumin e Roleve
+import { UpdateTenantDto } from './dto/update-tenant.dto.js';
 @Injectable()
 export class TenantsService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateTenantDto) {
-    // Verifiko nëse slug ekziston
+    // 1. Verifiko nëse slug ekziston paraprakisht
     const existingTenant = await this.prisma.tenant.findUnique({
       where: { slug: dto.slug },
     });
@@ -23,20 +24,60 @@ export class TenantsService {
       );
     }
 
-    return this.prisma.tenant.create({
-      data: {
-        name: dto.name,
-        slug: dto.slug,
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        createdAt: true,
-      },
+    // 2. Verifiko nëse emaili i adminit është i zënë në sistem
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: dto.adminEmail },
+    });
+
+    if (existingUser) {
+      throw new ConflictException(
+        `A user with email "${dto.adminEmail}" already exists in the system`,
+      );
+    }
+
+    // 3. Hash fjalëkalimin e Adminit të ri
+    const hashedPassword = await bcrypt.hash(dto.adminPassword, 10);
+
+    // 4. Ekzekutimi në Transaksion (Nëse dështon user-i, fshihet edhe tenanti automatikisht)
+    return this.prisma.$transaction(async (tx) => {
+      // Krijojmë Tenant-in
+      const tenant = await tx.tenant.create({
+        data: {
+          name: dto.name,
+          slug: dto.slug,
+        },
+      });
+
+      // Krijojmë User-in e parë me rolin ADMIN të lidhur me këtë tenantId
+      const admin = await tx.user.create({
+        data: {
+          username: dto.adminUsername,
+          email: dto.adminEmail,
+          password: hashedPassword,
+          tenantId: tenant.id,
+          role: Role.ADMIN, // <--- Forcohet si ADMIN i kësaj agjencie
+        },
+      });
+
+      return {
+        message: 'Tenant and Admin created successfully',
+        tenant: {
+          id: tenant.id,
+          name: tenant.name,
+          slug: tenant.slug,
+          createdAt: tenant.createdAt,
+        },
+        admin: {
+          id: admin.id,
+          username: admin.username,
+          email: admin.email,
+          role: admin.role,
+        },
+      };
     });
   }
 
+  // Metodat e tjera (findAll, findOne, findBySlug, update, remove) mbeten plotësisht TË NJËJTA...
   async findAll() {
     return this.prisma.tenant.findMany({
       select: {
@@ -82,10 +123,10 @@ export class TenantsService {
     return tenant;
   }
 
-  async update(id: string, data: { name?: string; slug?: string }) {
+  async update(id: string, dto: UpdateTenantDto) {
     const tenant = await this.prisma.tenant.update({
       where: { id },
-      data,
+      data: dto,
       select: { id: true, name: true, slug: true },
     });
 
@@ -93,12 +134,10 @@ export class TenantsService {
   }
 
   async remove(id: string) {
-    // Fshi fillimisht të gjithë user-at e tenant-it
     await this.prisma.user.deleteMany({
       where: { tenantId: id },
     });
 
-    // Pastaj fshi tenant-in
     await this.prisma.tenant.delete({
       where: { id },
     });

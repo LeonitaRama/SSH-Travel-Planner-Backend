@@ -20,7 +20,6 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiHeader,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
@@ -32,32 +31,22 @@ import { TenantGuard } from '../../common/guards/tenant.guard.js';
 import { Role } from '../../common/enums/role.enum.js';
 
 @ApiTags('Users')
-@ApiBearerAuth('JWT-auth') // ← E RËNDËSISHME: Shto këtë
+@ApiBearerAuth('JWT-auth')
 @ApiSecurity('tenant-id')
-@ApiHeader({
-  name: 'x-tenant-id',
-  required: true,
-  description: 'Tenant ID (UUID format)',
-})
 @Controller('users')
 @UseGuards(AuthGuard('jwt'), RolesGuard, TenantGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   // ============================================
-  // GET /users - Listo të gjithë user-at
-  // Vetëm ADMIN dhe SUPER_ADMIN
+  // GET /users - Listo të gjithë user-at e tenantit
   // ============================================
   @Get()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN) // PËRMIRËSIM: Edhe STAFF mund të shohë listën e user-ave (p.sh. klientët e agjencisë)
   @ApiOperation({ summary: 'Get all users for current tenant' })
   @ApiResponse({
     status: 200,
     description: 'List of users retrieved successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing token',
   })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient role' })
   async findAll(@TenantId() tenantId: string) {
@@ -66,24 +55,21 @@ export class UsersController {
 
   // ============================================
   // GET /users/:id - Gjej user-in sipas ID
-  // ADMIN dhe SUPER_ADMIN mund të shohin këdo
-  // CUSTOMER dhe STAFF mund të shohin vetëm veten
   // ============================================
   @Get(':id')
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'User found successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
     description: 'Forbidden - You can only view your own profile',
   })
-  @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(
     @TenantId() tenantId: string,
     @Param('id') id: string,
     @Req() req: any,
   ) {
+    // CUSTOMER dhe STAFF mund të shohin VETËM veten e tyre
     if (
       (req.user.role === Role.CUSTOMER || req.user.role === Role.STAFF) &&
       req.user.sub !== id
@@ -94,18 +80,15 @@ export class UsersController {
   }
 
   // ============================================
-  // POST /users - Krijo user të ri
-  // Vetëm SUPER_ADMIN
+  // POST /users - Krijo user të ri brenda Tenant-it
   // ============================================
   @Post()
-  @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Create new user' })
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN) // KORRIGJIM: Lejo ADMIN-in e agjencisë të krijojë punëtorë/klientë
+  @ApiOperation({ summary: 'Create new user for this tenant' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Only SUPER_ADMIN can create users',
+    description: 'Forbidden - Only Admin or Super Admin can create users',
   })
   @HttpCode(HttpStatus.CREATED)
   async create(@TenantId() tenantId: string, @Body() dto: CreateUserDto) {
@@ -114,33 +97,36 @@ export class UsersController {
 
   // ============================================
   // PATCH /users/:id - Përditëso user-in
-  // CUSTOMER dhe STAFF: vetëm veten
-  // ADMIN dhe SUPER_ADMIN: mund të përditësojnë këdo
   // ============================================
   @Patch(':id')
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update user' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Cannot update other users or change own role',
-  })
-  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Action not allowed' })
   async update(
     @TenantId() tenantId: string,
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
     @Req() req: any,
   ) {
-    if (
-      (req.user.role === Role.CUSTOMER || req.user.role === Role.STAFF) &&
-      req.user.sub !== id
-    ) {
+    const isOwner = req.user.sub === id;
+    const isAtLeastAdmin =
+      req.user.role === Role.ADMIN || req.user.role === Role.SUPER_ADMIN;
+
+    // 1. CUSTOMER dhe STAFF mund të editojnë VETËM veten e tyre
+    if (!isAtLeastAdmin && !isOwner) {
       throw new ForbiddenException('You can only update your own profile');
     }
 
-    if (dto.role && req.user.sub === id && req.user.role !== Role.SUPER_ADMIN) {
+    // 2. KORRIGJIM I SIGURISË: Vetëm Admin/Super Admin mund të ndryshojnë rolet
+    if (dto.role && !isAtLeastAdmin) {
+      throw new ForbiddenException(
+        'Only Administrators can assign or change roles',
+      );
+    }
+
+    // 3. Sigurohemi që as Admini nuk i heq dot rolin vetes gabimisht
+    if (dto.role && isOwner && req.user.role !== Role.SUPER_ADMIN) {
       throw new ForbiddenException('You cannot change your own role');
     }
 
@@ -149,28 +135,27 @@ export class UsersController {
 
   // ============================================
   // DELETE /users/:id - Fshi user-in
-  // Vetëm SUPER_ADMIN
   // ============================================
   @Delete(':id')
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN) // KORRIGJIM: Admini i agjencisë duhet të mund të fshijë një user të tenantit të vet
   @ApiOperation({ summary: 'Delete user' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Only SUPER_ADMIN can delete users',
+    description: 'Forbidden - Requires Admin privileges',
   })
-  @ApiResponse({ status: 404, description: 'User not found' })
   @HttpCode(HttpStatus.OK)
   async remove(@TenantId() tenantId: string, @Param('id') id: string) {
     return this.usersService.remove(tenantId, id);
   }
 
+  // ============================================
+  // GET /users/profile/me - Merr profilin tim aktual
+  // ============================================
   @Get('profile/me')
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@TenantId() tenantId: string, @Req() req: any) {
     return this.usersService.findOne(tenantId, req.user.sub);
   }

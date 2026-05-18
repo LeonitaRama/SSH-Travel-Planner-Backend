@@ -17,6 +17,11 @@ export abstract class BaseTenantService {
         });
         return !!user;
       // Shto modele të tjera kur të krijosh (booking, etc.)
+      case 'destination':
+        const dest = await this.prisma.destination.findFirst({
+          where: { id: resourceId, tenantId },
+        });
+        return !!dest;
       default:
         return false;
     }

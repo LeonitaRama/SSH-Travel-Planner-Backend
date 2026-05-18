@@ -13,7 +13,8 @@ import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
-import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
+// import { TenantMiddleware } from './common/middleware/tenant.middleware.js';
+import { DestinationsModule } from './modules/destinations/destinations.module.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { LoggingMiddleware } from './common/middleware/logging.middleware.js';
 import { RateLimitMiddleware } from './common/middleware/rate-limit.middleware.js';
@@ -29,6 +30,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
     TenantsModule,
     UsersModule,
     AuthModule,
+    DestinationsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -46,7 +48,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(LoggingMiddleware, RateLimitMiddleware, TenantMiddleware)
+      .apply(LoggingMiddleware, RateLimitMiddleware)
       .exclude(
         { path: '/', method: RequestMethod.GET },
         { path: 'api', method: RequestMethod.GET },

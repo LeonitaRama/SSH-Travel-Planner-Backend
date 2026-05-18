@@ -8,6 +8,9 @@ import { PrismaService } from './modules/prisma/prisma.service.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.setGlobalPrefix('');
+
   app.useGlobalInterceptors(new TenantInterceptor(app.get(PrismaService)));
 
   app.useGlobalPipes(
@@ -31,7 +34,7 @@ async function bootstrap() {
         description: 'Enter your JWT token here',
         in: 'header',
       },
-      'JWT-auth', // Emri i auth-it
+      'JWT-auth',
     )
     .addApiKey(
       {
