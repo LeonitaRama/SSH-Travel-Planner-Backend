@@ -1,15 +1,11 @@
-// src/modules/auth/dto/register.dto.ts
 import {
   IsEmail,
   IsNotEmpty,
   MinLength,
   IsString,
   IsUUID,
-  IsOptional,
-  IsEnum,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from '../../../common/enums/role.enum.js';
 
 export class RegisterDto {
   @ApiProperty({ example: 'john_doe' })
@@ -28,9 +24,4 @@ export class RegisterDto {
   @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
   @IsUUID()
   tenantId!: string;
-
-  @ApiProperty({ enum: Role, default: Role.CUSTOMER, required: false })
-  @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
 }

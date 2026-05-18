@@ -1,4 +1,3 @@
-// src/common/guards/tenant.guard.ts
 import {
   Injectable,
   CanActivate,
@@ -6,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../modules/prisma/prisma.service.js';
-import { Role } from '../enums/role.enum.js'; // <- SHTONI KËTË
+import { Role } from '../enums/role.enum.js';
 
 @Injectable()
 export class TenantGuard implements CanActivate {
@@ -21,8 +20,13 @@ export class TenantGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // Verifikon që user-i i përket tenant-it të kërkuar
-    if (user.tenantId !== tenantId && user.role !== Role.SUPER_ADMIN) {
+    // 1. Nëse është SUPER_ADMIN, lejoje të kalojë automatikisht kudo
+    if (user.role === Role.SUPER_ADMIN) {
+      return true;
+    }
+
+    // 2. Për rolet e tjera, header-i duhet të ekzistojë dhe të përputhet me tenantId e tyre
+    if (!tenantId || user.tenantId !== tenantId) {
       throw new ForbiddenException('Access denied to this tenant');
     }
 

@@ -14,6 +14,8 @@ model Tenant {
   settings      TenantSettings?
   users         User[]
   refreshTokens RefreshToken[]
+
+  destinations Destination[]
 }
 
 model TenantSettings {
@@ -24,17 +26,17 @@ model TenantSettings {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String
-  username      String?
-  password      String
-  tenantId      String
-  role          Role     @default(CUSTOMER)  // ← Default CUSTOMER
-  createdAt     DateTime @default(now())
-  
-  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  email     String
+  username  String?
+  password  String
+  tenantId  String
+  role      Role     @default(CUSTOMER) // ← Default CUSTOMER
+  createdAt DateTime @default(now())
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   refreshTokens RefreshToken[]
-  
+
   @@unique([email, tenantId])
   @@index([tenantId])
 }
@@ -57,8 +59,22 @@ model RefreshToken {
 }
 
 enum Role {
-  CUSTOMER     // Klient i zakonshëm - mund të rezervojë
-  STAFF        // Staf - mund të menaxhojë rezervimet
-  ADMIN        // Admin - mund të menaxhojë agjencinë
-  SUPER_ADMIN  // Super Admin - mund të menaxhojë të gjitha agjencitë
+  CUSTOMER // Klient i zakonshëm - mund të rezervojë
+  STAFF // Staf - mund të menaxhojë rezervimet
+  ADMIN // Admin - mund të menaxhojë agjencinë
+  SUPER_ADMIN // Super Admin - mund të menaxhojë të gjitha agjencitë
+}
+
+model Destination {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  country     String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }
