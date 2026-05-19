@@ -21,6 +21,7 @@ model Tenant {
   flights      Flight[]
   bookings     Booking[]
   bookingItems BookingItem[]
+  payments     Payment[]
 }
 
 model TenantSettings {
@@ -180,6 +181,7 @@ model Booking {
   flight      Flight?     @relation(fields: [flightId], references: [id])
 
   bookingItems BookingItem[]
+  payments     Payment[]
 }
 
 model BookingItem {
@@ -191,6 +193,22 @@ model BookingItem {
   type        String
   referenceId String
   price       Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id       String @id @default(uuid())
+  amount   Float
+  currency String
+  status   String
+
+  tenantId  String
+  bookingId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
