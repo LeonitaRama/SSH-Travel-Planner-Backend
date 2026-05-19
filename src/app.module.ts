@@ -21,6 +21,7 @@ import { RateLimitMiddleware } from './common/middleware/rate-limit.middleware.j
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { HotelsModule } from './modules/hotels/hotels.module.js';
 import { RoomsModule } from './modules/rooms/rooms.module.js';
+import { FlightsModule } from './modules/flights/flights.module.js';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { RoomsModule } from './modules/rooms/rooms.module.js';
     DestinationsModule,
     HotelsModule,
     RoomsModule,
+    FlightsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -57,13 +59,12 @@ export class AppModule implements NestModule {
         { path: '/', method: RequestMethod.GET },
         { path: 'api', method: RequestMethod.GET },
         { path: 'api/*path', method: RequestMethod.GET },
-        // Shto këto:
         { path: 'api/v1/tenants', method: RequestMethod.POST },
         { path: 'api/v1/tenants', method: RequestMethod.GET },
         { path: 'api/v1/tenants/slug/:slug', method: RequestMethod.GET },
         { path: 'auth/register', method: RequestMethod.POST },
         { path: 'auth/login', method: RequestMethod.POST },
-        { path: 'auth/refresh-token', method: RequestMethod.POST }, // Shto
+        { path: 'auth/refresh-token', method: RequestMethod.POST },
       )
       .forRoutes('*');
   }
