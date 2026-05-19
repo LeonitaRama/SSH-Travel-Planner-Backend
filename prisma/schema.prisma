@@ -16,6 +16,8 @@ model Tenant {
   refreshTokens RefreshToken[]
 
   destinations Destination[]
+  hotels       Hotel[]
+  rooms        Room[]
 }
 
 model TenantSettings {
@@ -74,7 +76,50 @@ model Destination {
   imageUrl    String?
   createdAt   DateTime @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hotels Hotel[]
 
   @@index([tenantId])
+}
+
+model Hotel {
+  id            String   @id @default(uuid())
+  tenantId      String
+  name          String
+  description   String
+  address       String
+  rating        Float?
+  pricePerNight Float
+  imageUrl      String?
+  destinationId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  rooms Room[]
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([destinationId])
+}
+
+model Room {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+  price       Float
+  capacity    Int
+  imageUrl    String?
+
+  tenantId String
+  hotelId  String
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hotel  Hotel  @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
