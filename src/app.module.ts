@@ -22,7 +22,11 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { HotelsModule } from './modules/hotels/hotels.module.js';
 import { RoomsModule } from './modules/rooms/rooms.module.js';
 import { FlightsModule } from './modules/flights/flights.module.js';
+<<<<<<< Updated upstream
 import { BookingsModule } from './modules/bookings/bookings.module.js';
+=======
+import { BookingItemsModule } from './modules/booking-items/booking-items.module.js';
+>>>>>>> Stashed changes
 
 @Module({
   imports: [
@@ -38,7 +42,11 @@ import { BookingsModule } from './modules/bookings/bookings.module.js';
     HotelsModule,
     RoomsModule,
     FlightsModule,
+<<<<<<< Updated upstream
     BookingsModule,
+=======
+    BookingItemsModule,
+>>>>>>> Stashed changes
   ],
   controllers: [AppController],
   providers: [
