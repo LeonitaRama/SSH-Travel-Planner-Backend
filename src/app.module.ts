@@ -27,6 +27,7 @@ import { BookingItemsModule } from './modules/booking-items/booking-items.module
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module.js';
 import { ReviewsModule } from './modules/reviews/reviews.module.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module.js';
     PaymentsModule,
     AuditLogsModule,
     ReviewsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

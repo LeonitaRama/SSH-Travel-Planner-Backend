@@ -15,15 +15,16 @@ model Tenant {
   users         User[]
   refreshTokens RefreshToken[]
 
-  destinations Destination[]
-  hotels       Hotel[]
-  rooms        Room[]
-  flights      Flight[]
-  bookings     Booking[]
-  bookingItems BookingItem[]
-  payments     Payment[]
-  auditLogs    AuditLog[]
-  reviews      Review[]
+  destinations  Destination[]
+  hotels        Hotel[]
+  rooms         Room[]
+  flights       Flight[]
+  bookings      Booking[]
+  bookingItems  BookingItem[]
+  payments      Payment[]
+  auditLogs     AuditLog[]
+  reviews       Review[]
+  notifications Notification[]
 }
 
 model TenantSettings {
@@ -264,4 +265,19 @@ model Review {
   hotel Hotel? @relation(fields: [hotelId], references: [id])
 
   destination Destination? @relation(fields: [destinationId], references: [id])
+}
+
+model Notification {
+  id       String  @id @default(uuid())
+  tenantId String
+  userId   String
+  title    String
+  message  String
+  type     String // e.g. INFO, WARNING, BOOKING, PAYMENT
+  isRead   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
