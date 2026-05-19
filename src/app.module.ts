@@ -19,6 +19,8 @@ import { RolesGuard } from './common/guards/roles.guard.js';
 import { LoggingMiddleware } from './common/middleware/logging.middleware.js';
 import { RateLimitMiddleware } from './common/middleware/rate-limit.middleware.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
+import { HotelsModule } from './modules/hotels/hotels.module.js';
+import { RoomsModule } from './modules/rooms/rooms.module.js';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
     UsersModule,
     AuthModule,
     DestinationsModule,
+    HotelsModule,
+    RoomsModule,
   ],
   controllers: [AppController],
   providers: [
