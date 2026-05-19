@@ -19,6 +19,7 @@ model Tenant {
   hotels       Hotel[]
   rooms        Room[]
   flights      Flight[]
+  bookings     Booking[]
 }
 
 model TenantSettings {
@@ -77,8 +78,9 @@ model Destination {
   imageUrl    String?
   createdAt   DateTime @default(now())
 
-  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  hotels Hotel[]
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hotels   Hotel[]
+  bookings Booking[]
 
   @@index([tenantId])
 }
@@ -100,6 +102,7 @@ model Hotel {
 
   tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -121,8 +124,9 @@ model Room {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   hotel  Hotel  @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
 }
 
 model Flight {
@@ -144,5 +148,33 @@ model Flight {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+}
+
+model Booking {
+  id String @id @default(uuid())
+
+  tenantId String
+  userId   String
+
+  destinationId String
+  hotelId       String?
+  roomId        String?
+  flightId      String?
+
+  numberOfGuests Int
+
+  startDate DateTime
+  endDate   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  hotel       Hotel?      @relation(fields: [hotelId], references: [id])
+  room        Room?       @relation(fields: [roomId], references: [id])
+  flight      Flight?     @relation(fields: [flightId], references: [id])
 }

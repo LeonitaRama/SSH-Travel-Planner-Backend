@@ -22,6 +22,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { HotelsModule } from './modules/hotels/hotels.module.js';
 import { RoomsModule } from './modules/rooms/rooms.module.js';
 import { FlightsModule } from './modules/flights/flights.module.js';
+import { BookingsModule } from './modules/bookings/bookings.module.js';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { FlightsModule } from './modules/flights/flights.module.js';
     HotelsModule,
     RoomsModule,
     FlightsModule,
+    BookingsModule,
   ],
   controllers: [AppController],
   providers: [
