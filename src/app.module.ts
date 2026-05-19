@@ -25,6 +25,7 @@ import { FlightsModule } from './modules/flights/flights.module.js';
 import { BookingsModule } from './modules/bookings/bookings.module.js';
 import { BookingItemsModule } from './modules/booking-items/booking-items.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module.js';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
     BookingsModule,
     BookingItemsModule,
     PaymentsModule,
+    AuditLogsModule,
   ],
   controllers: [AppController],
   providers: [
