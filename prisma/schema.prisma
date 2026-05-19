@@ -22,6 +22,7 @@ model Tenant {
   bookings     Booking[]
   bookingItems BookingItem[]
   payments     Payment[]
+  auditLogs    AuditLog[]
 }
 
 model TenantSettings {
@@ -42,6 +43,8 @@ model User {
 
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   refreshTokens RefreshToken[]
+  bookings      Booking[]
+  auditLogs     AuditLog[]
 
   @@unique([email, tenantId])
   @@index([tenantId])
@@ -174,6 +177,7 @@ model Booking {
   updatedAt DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   destination Destination @relation(fields: [destinationId], references: [id])
   hotel       Hotel?      @relation(fields: [hotelId], references: [id])
@@ -215,4 +219,21 @@ model Payment {
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id      String  @id @default(uuid())
+  action  String
+  message String
+  status  String?
+
+  tenantId String
+  userId   String?
+
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
 }
