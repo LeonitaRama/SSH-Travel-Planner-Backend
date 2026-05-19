@@ -22,6 +22,7 @@ model Tenant {
   bookings     Booking[]
   bookingItems BookingItem[]
   payments     Payment[]
+  auditLogs    AuditLog[]
 }
 
 model TenantSettings {
@@ -42,6 +43,8 @@ model User {
 
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   refreshTokens RefreshToken[]
+  bookings      Booking[]
+  auditLogs     AuditLog[]
 
   @@unique([email, tenantId])
   @@index([tenantId])
@@ -169,11 +172,12 @@ model Booking {
 
   startDate DateTime
   endDate   DateTime
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   destination Destination @relation(fields: [destinationId], references: [id])
   hotel       Hotel?      @relation(fields: [hotelId], references: [id])
@@ -201,6 +205,64 @@ model BookingItem {
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
 
+model Payment {
+  id       String @id @default(uuid())
+  amount   Float
+  currency String
+  status   String
+
+  tenantId  String
+  bookingId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  hotel       Hotel?      @relation(fields: [hotelId], references: [id])
+  room        Room?       @relation(fields: [roomId], references: [id])
+  flight      Flight?     @relation(fields: [flightId], references: [id])
+
+  bookingItems BookingItem[]
+  payments     Payment[]
+}
+
+model BookingItem {
+  id String @id @default(uuid())
+
+  tenantId  String
+  bookingId String
+
+  type        String
+  referenceId String
+  price       Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+feature/audit-logs
+model AuditLog {
+  id      String  @id @default(uuid())
+  action  String
+  message String
+  status  String?
+
+  tenantId String
+  userId   String?
+
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
 
 model Payment {
   id       String @id @default(uuid())
@@ -236,5 +298,4 @@ model Flight {
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
 }
