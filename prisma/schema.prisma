@@ -25,6 +25,14 @@ model Tenant {
   auditLogs     AuditLog[]
   reviews       Review[]
   notifications Notification[]
+  destinations Destination[]
+  hotels       Hotel[]
+  rooms        Room[]
+  flights      Flight[]
+  bookings     Booking[]
+  bookingItems BookingItem[]
+  payments     Payment[]
+  auditLogs    AuditLog[]
 }
 
 model TenantSettings {
@@ -48,7 +56,6 @@ model User {
   bookings      Booking[]
   auditLogs     AuditLog[]
   reviews       Review[]
-
   @@unique([email, tenantId])
   @@index([tenantId])
 }
@@ -90,7 +97,6 @@ model Destination {
   hotels   Hotel[]
   bookings Booking[]
   reviews  Review[]
-
   @@index([tenantId])
 }
 
@@ -278,6 +284,153 @@ model Notification {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+}
+
+model Booking {
+  id String @id @default(uuid())
+
+  tenantId String
+  userId   String
+
+  destinationId String
+  hotelId       String?
+  roomId        String?
+  flightId      String?
+
+  numberOfGuests Int
+
+  startDate DateTime
+  endDate   DateTime
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  hotel       Hotel?      @relation(fields: [hotelId], references: [id])
+  room        Room?       @relation(fields: [roomId], references: [id])
+  flight      Flight?     @relation(fields: [flightId], references: [id])
+
+  bookingItems BookingItem[]
+  payments     Payment[]
+}
+
+model BookingItem {
+  id String @id @default(uuid())
+
+  tenantId  String
+  bookingId String
+
+  type        String
+  referenceId String
+  price       Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id       String @id @default(uuid())
+  amount   Float
+  currency String
+  status   String
+
+  tenantId  String
+  bookingId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  hotel       Hotel?      @relation(fields: [hotelId], references: [id])
+  room        Room?       @relation(fields: [roomId], references: [id])
+  flight      Flight?     @relation(fields: [flightId], references: [id])
+
+  bookingItems BookingItem[]
+  payments     Payment[]
+}
+
+model BookingItem {
+  id String @id @default(uuid())
+
+  tenantId  String
+  bookingId String
+
+  type        String
+  referenceId String
+  price       Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+feature/audit-logs
+model AuditLog {
+  id      String  @id @default(uuid())
+  action  String
+  message String
+  status  String?
+
+  tenantId String
+  userId   String?
+
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+
+model Payment {
+  id       String @id @default(uuid())
+  amount   Float
+  currency String
+  status   String
+
+  tenantId  String
+  bookingId String
+
+model Flight {
+  id String @id @default(uuid())
+
+  tenantId String
+
+  flightNumber String
+  airline      String
+
+  departureCity String
+  arrivalCity   String
+
+  price Float
+
+  departureTime DateTime?
+  arrivalTime   DateTime?
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }

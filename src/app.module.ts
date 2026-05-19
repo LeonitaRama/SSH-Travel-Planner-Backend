@@ -28,6 +28,7 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module.js';
 import { ReviewsModule } from './modules/reviews/reviews.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { BookingItemsModule } from './modules/booking-items/booking-items.module';
 
 @Module({
   imports: [
@@ -49,6 +50,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     AuditLogsModule,
     ReviewsModule,
     NotificationsModule,
+    feature/audit-logs
+    AuditLogsModule,
+    BookingItemsModule,
   ],
   controllers: [AppController],
   providers: [
