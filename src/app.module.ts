@@ -26,6 +26,7 @@ import { FlightsModule } from './modules/flights/flights.module.js';
 import { BookingsModule } from './modules/bookings/bookings.module.js';
 =======
 import { BookingItemsModule } from './modules/booking-items/booking-items.module.js';
+import { BookingItemsModule } from './modules/booking-items/booking-items.module';
 >>>>>>> Stashed changes
 
 @Module({
@@ -44,6 +45,7 @@ import { BookingItemsModule } from './modules/booking-items/booking-items.module
     FlightsModule,
 <<<<<<< Updated upstream
     BookingsModule,
+BookingItemsModule,
 =======
     BookingItemsModule,
 >>>>>>> Stashed changes

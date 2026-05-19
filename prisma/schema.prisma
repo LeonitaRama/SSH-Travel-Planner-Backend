@@ -19,12 +19,8 @@ model Tenant {
   hotels       Hotel[]
   rooms        Room[]
   flights      Flight[]
-<<<<<<< Updated upstream
   bookings     Booking[]
-=======
-  booking      Booking[]
   bookingItems BookingItem[]
->>>>>>> Stashed changes
 }
 
 model TenantSettings {
@@ -182,8 +178,6 @@ model Booking {
   hotel       Hotel?      @relation(fields: [hotelId], references: [id])
   room        Room?       @relation(fields: [roomId], references: [id])
   flight      Flight?     @relation(fields: [flightId], references: [id])
-<<<<<<< Updated upstream
-=======
 
   bookingItems BookingItem[]
 }
@@ -203,5 +197,4 @@ model BookingItem {
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
->>>>>>> Stashed changes
 }
