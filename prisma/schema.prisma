@@ -15,16 +15,17 @@ model Tenant {
   users         User[]
   refreshTokens RefreshToken[]
 
-  destinations  Destination[]
-  hotels        Hotel[]
-  rooms         Room[]
-  flights       Flight[]
-  bookings      Booking[]
-  bookingItems  BookingItem[]
-  payments      Payment[]
-  auditLogs     AuditLog[]
-  reviews       Review[]
-  notifications Notification[]
+  destinations   Destination[]
+  hotels         Hotel[]
+  rooms          Room[]
+  flights        Flight[]
+  bookings       Booking[]
+  bookingItems   BookingItem[]
+  payments       Payment[]
+  auditLogs      AuditLog[]
+  reviews        Review[]
+  notifications  Notification[]
+  travelPackages TravelPackage[]
 }
 
 model TenantSettings {
@@ -86,10 +87,11 @@ model Destination {
   imageUrl    String?
   createdAt   DateTime @default(now())
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  hotels   Hotel[]
-  bookings Booking[]
-  reviews  Review[]
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hotels         Hotel[]
+  bookings       Booking[]
+  reviews        Review[]
+  travelPackages TravelPackage[]
 
   @@index([tenantId])
 }
@@ -280,4 +282,26 @@ model Notification {
   updatedAt DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model TravelPackage {
+  id       String @id @default(uuid())
+  tenantId String
+
+  name        String
+  description String?
+  price       Float
+  duration    Int // në ditë
+  imageUrl    String?
+
+  destinationId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([destinationId])
 }

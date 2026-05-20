@@ -28,6 +28,7 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module.js';
 import { ReviewsModule } from './modules/reviews/reviews.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { TravelPackagesModule } from './modules/travel-packages/travel-packages.module.js';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     AuditLogsModule,
     ReviewsModule,
     NotificationsModule,
+    TravelPackagesModule,
   ],
   controllers: [AppController],
   providers: [
