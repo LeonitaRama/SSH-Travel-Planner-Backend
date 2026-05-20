@@ -26,6 +26,21 @@ model Tenant {
   reviews        Review[]
   notifications  Notification[]
   travelPackages TravelPackage[]
+  destinations  Destination[]
+  hotels        Hotel[]
+  rooms         Room[]
+  flights       Flight[]
+  bookings      Booking[]
+  bookingItems  BookingItem[]
+  payments      Payment[]
+  auditLogs     AuditLog[]
+  reviews       Review[]
+  notifications Notification[]
+  destinations Destination[]
+  hotels       Hotel[]
+  rooms        Room[]
+  flights      Flight[]
+  bookings     Booking[]
 }
 
 model TenantSettings {
@@ -92,6 +107,9 @@ model Destination {
   bookings       Booking[]
   reviews        Review[]
   travelPackages TravelPackage[]
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hotels   Hotel[]
+  bookings Booking[]
 
   @@index([tenantId])
 }
@@ -246,6 +264,14 @@ model AuditLog {
 }
 
 model Review {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+}
+
+model Booking {
   id String @id @default(uuid())
 
   tenantId String
@@ -277,6 +303,15 @@ model Notification {
   message  String
   type     String // e.g. INFO, WARNING, BOOKING, PAYMENT
   isRead   Boolean @default(false)
+  destinationId String
+  hotelId       String?
+  roomId        String?
+  flightId      String?
+
+  numberOfGuests Int
+
+  startDate DateTime
+  endDate   DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -304,4 +339,9 @@ model TravelPackage {
 
   @@index([tenantId])
   @@index([destinationId])
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  hotel       Hotel?      @relation(fields: [hotelId], references: [id])
+  room        Room?       @relation(fields: [roomId], references: [id])
+  flight      Flight?     @relation(fields: [flightId], references: [id])
 }
