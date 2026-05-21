@@ -12,7 +12,7 @@ export class TravelPackagesService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'TravelPackage',
+      modelName: 'travelPackage',
       defaultInclude: {
         destination: true,
       },

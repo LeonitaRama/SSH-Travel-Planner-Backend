@@ -15,7 +15,7 @@ export class FlightsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Flight',
+      modelName: 'flight',
     });
   }
 }

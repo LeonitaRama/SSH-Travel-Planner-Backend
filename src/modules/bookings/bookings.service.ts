@@ -13,7 +13,7 @@ export class BookingsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Booking',
+      modelName: 'booking',
 
       // BONUS: relations si hotels/rooms/flights/destination
       defaultInclude: {

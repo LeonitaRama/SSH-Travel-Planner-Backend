@@ -13,7 +13,7 @@ export class ActivitiesService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Activity', // Duhet të përputhet me emrin te BaseTenantService
+      modelName: 'activity', // Duhet të përputhet me emrin te BaseTenantService
       defaultInclude: {
         destination: true, // Kjo do të kthejë automatikisht objektin e destinacionit në çdo query!
       },

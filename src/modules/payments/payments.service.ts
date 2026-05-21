@@ -15,7 +15,7 @@ export class PaymentsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Payment',
+      modelName: 'payment',
 
       defaultInclude: {
         booking: true,

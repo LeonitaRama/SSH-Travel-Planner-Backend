@@ -12,7 +12,7 @@ export class NotificationsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Notification',
+      modelName: 'notification',
       defaultInclude: {
         tenant: true,
       },

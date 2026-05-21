@@ -15,7 +15,7 @@ export class ReviewsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Review',
+      modelName: 'review',
     });
   }
 }

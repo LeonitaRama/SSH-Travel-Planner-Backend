@@ -15,7 +15,7 @@ export class AuditLogsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'AuditLog',
+      modelName: 'auditLog',
     });
   }
 }
