@@ -31,6 +31,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { TravelPackagesModule } from './modules/travel-packages/travel-packages.module.js';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AirlinesModule } from './modules/airlines/airlines.module.js';
+import { AirportsModule } from './modules/airports/airports.module.js';
+import { ActivitiesModule } from './modules/activities/activities.module.js';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { AirlinesModule } from './modules/airlines/airlines.module.js';
     NotificationsModule,
     TravelPackagesModule,
     AirlinesModule,
+    AirportsModule,
+    ActivitiesModule,
   ],
   controllers: [AppController],
   providers: [
