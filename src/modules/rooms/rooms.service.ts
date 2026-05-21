@@ -15,7 +15,7 @@ export class RoomsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Room',
+      modelName: 'room',
 
       defaultInclude: {
         hotel: true,

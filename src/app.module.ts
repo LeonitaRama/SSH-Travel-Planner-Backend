@@ -33,6 +33,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { AirlinesModule } from './modules/airlines/airlines.module.js';
 import { AirportsModule } from './modules/airports/airports.module.js';
 import { ActivitiesModule } from './modules/activities/activities.module.js';
+import { WishlistsModule } from './modules/wishlists/wishlists.module.js';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { ActivitiesModule } from './modules/activities/activities.module.js';
     AirlinesModule,
     AirportsModule,
     ActivitiesModule,
+    WishlistsModule,
   ],
   controllers: [AppController],
   providers: [

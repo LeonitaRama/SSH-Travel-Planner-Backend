@@ -12,7 +12,7 @@ export class DestinationsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Destination', // Duhet të përputhet ekzaktësisht me emrin e modelit te schema.prisma
+      modelName: 'destination', // Duhet të përputhet ekzaktësisht me emrin e modelit te schema.prisma
       // defaultSelect: { id: true, name: true, country: true } // Opcionale, nëse doni select specifik
     });
   }

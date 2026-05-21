@@ -13,7 +13,7 @@ export class AirportsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'Airport', // Duhet të përputhet ekzaktësisht me casen te BaseTenantService dhe Prisma
+      modelName: 'airport', // Duhet të përputhet ekzaktësisht me casen te BaseTenantService dhe Prisma
     });
   }
 }
