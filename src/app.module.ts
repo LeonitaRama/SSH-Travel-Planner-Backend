@@ -29,13 +29,20 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module.js';
 import { ReviewsModule } from './modules/reviews/reviews.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { TravelPackagesModule } from './modules/travel-packages/travel-packages.module.js';
-
+import { CacheModule } from '@nestjs/cache-manager';
+import { AirlinesModule } from './modules/airlines/airlines.module.js';
+import { AirportsModule } from './modules/airports/airports.module.js';
+import { ActivitiesModule } from './modules/activities/activities.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+    }),
+    CacheModule.register({
+      isGlobal: true, // E bën të qasshëm në të gjithë aplikacionin
+      ttl: 60000, // Cache jeton për 60 sekonda
     }),
     PrismaModule,
     TenantsModule,
@@ -52,6 +59,9 @@ import { TravelPackagesModule } from './modules/travel-packages/travel-packages.
     ReviewsModule,
     NotificationsModule,
     TravelPackagesModule,
+    AirlinesModule,
+    AirportsModule,
+    ActivitiesModule,
   ],
   controllers: [AppController],
   providers: [
