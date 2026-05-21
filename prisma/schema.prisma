@@ -33,13 +33,6 @@ model Tenant {
   aiChats        AiChat[]
 }
 
-model TenantSettings {
-  id       String  @id @default(uuid())
-  tenantId String  @unique
-  theme    String?
-  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-}
-
 model User {
   id        String   @id @default(uuid())
   email     String
@@ -329,6 +322,31 @@ model Activity {
   @@index([destinationId])
 }
 
+model AiChat {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  prompt    String
+  response  String
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model TenantSettings {
+  id       String  @id @default(uuid())
+  tenantId String  @unique
+  theme    String?
+  language String  @default("en")
+
+  currency String @default("EUR")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
 model Wishlist {
   id            String   @id @default(uuid())
   tenantId      String
@@ -341,21 +359,6 @@ model Wishlist {
   destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
 
   @@unique([userId, destinationId])
-  @@index([tenantId])
-  @@index([userId])
-}
-
-model AiChat {
-  id        String   @id @default(uuid())
-  tenantId  String
-  userId    String
-  prompt    String
-  response  String
-  createdAt DateTime @default(now())
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@index([tenantId])
   @@index([userId])
 }

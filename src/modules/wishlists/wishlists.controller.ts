@@ -28,12 +28,7 @@ import { Role } from '../../common/enums/role.enum.js';
 @ApiTags('Wishlists')
 @ApiBearerAuth('JWT-auth')
 @ApiSecurity('tenant-id')
-@ApiHeader({
-  name: 'x-tenant-id',
-  required: true,
-  description: 'Tenant ID (UUID format)',
-})
-@Controller('api/v1/wishlists')
+@Controller('wishlists')
 @UseGuards(AuthGuard('jwt'), RolesGuard, TenantGuard)
 export class WishlistsController {
   constructor(private readonly wishlistsService: WishlistsService) {}
