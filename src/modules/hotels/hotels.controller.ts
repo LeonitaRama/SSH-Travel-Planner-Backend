@@ -17,13 +17,17 @@ import {
   ApiOperation,
   ApiQuery,
 } from '@nestjs/swagger';
+
 import { HotelsService } from './hotels.service.js';
 import { CreateHotelDto } from './dto/create-hotel.dto.js';
 import { UpdateHotelDto } from './dto/update-hotel.dto.js';
+
 import { TenantId } from '../../common/decorators/tenant.decorator.js';
 import { Roles } from '../../common/decorators/roles.decorator.js';
+
 import { RolesGuard } from '../../common/guards/roles.guard.js';
 import { TenantGuard } from '../../common/guards/tenant.guard.js';
+
 import { Role } from '../../common/enums/role.enum.js';
 
 @ApiTags('Hotels')
@@ -49,14 +53,31 @@ export class HotelsController {
     required: false,
     description: 'Filter by destination ID',
   })
+  @ApiQuery({
+    name: 'rating',
+    required: false,
+    description: 'Minimum hotel rating',
+  })
+  @ApiQuery({
+    name: 'maxPrice',
+    required: false,
+    description: 'Maximum price per night',
+  })
   async findAll(
     @TenantId() tenantId: string,
+
     @Query('destinationId') destinationId?: string,
+
+    @Query('rating') rating?: string,
+
+    @Query('maxPrice') maxPrice?: string,
   ) {
-    if (destinationId) {
-      return this.hotelsService.findByDestination(tenantId, destinationId);
-    }
-    return this.hotelsService.findAll(tenantId);
+    return this.hotelsService.findByFilters(
+      tenantId,
+      destinationId,
+      rating ? Number(rating) : undefined,
+      maxPrice ? Number(maxPrice) : undefined,
+    );
   }
 
   @Get(':id')
@@ -82,19 +103,5 @@ export class HotelsController {
   @ApiOperation({ summary: 'Delete a hotel' })
   async remove(@TenantId() tenantId: string, @Param('id') id: string) {
     return this.hotelsService.remove(tenantId, id);
-  }
-
-  @Get(':id/rooms')
-  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get all rooms for a specific hotel' })
-  async findRooms(@TenantId() tenantId: string, @Param('id') id: string) {
-    return this.hotelsService.findRoomsByHotel(tenantId, id);
-  }
-
-  @Get(':id/reviews')
-  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get all reviews for a specific hotel' })
-  async findReviews(@TenantId() tenantId: string, @Param('id') id: string) {
-    return this.hotelsService.findReviewsByHotel(tenantId, id);
   }
 }
