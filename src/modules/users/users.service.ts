@@ -51,4 +51,11 @@ export class UsersService extends BaseCrudService<
   async findAllByTenant(tenantId: string) {
     return this.findAll(tenantId);
   }
+
+async findReviewsByUser(tenantId: string, userId: string) {
+  return this.prismaService.review.findMany({
+    where: { userId, tenantId },
+  });
+}
+
 }

@@ -28,11 +28,6 @@ import { Role } from '../../common/enums/role.enum.js';
 @ApiTags('Destinations')
 @ApiBearerAuth('JWT-auth')
 @ApiSecurity('tenant-id')
-// @ApiHeader({
-//   name: 'x-tenant-id',
-//   required: true,
-//   description: 'Tenant ID (UUID format)',
-// })
 @Controller('destinations')
 @UseGuards(AuthGuard('jwt'), RolesGuard, TenantGuard)
 export class DestinationsController {
@@ -78,5 +73,25 @@ export class DestinationsController {
   @ApiOperation({ summary: 'Delete a destination' })
   async remove(@TenantId() tenantId: string, @Param('id') id: string) {
     return this.destinationsService.remove(tenantId, id);
+  }
+
+  @Get(':id/hotels')
+  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all hotels for a specific destination' })
+  async getHotelsByDestination(
+    @TenantId() tenantId: string,
+    @Param('id') id: string,
+  ) {
+    return this.destinationsService.findHotelsByDestination(tenantId, id);
+  }
+
+  @Get(':id/flights')
+  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all flights for a specific destination' })
+  async getFlightsByDestination(
+    @TenantId() tenantId: string,
+    @Param('id') id: string,
+  ) {
+    return this.destinationsService.findFlightsByDestination(tenantId, id);
   }
 }

@@ -38,11 +38,8 @@ import { Role } from '../../common/enums/role.enum.js';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // ============================================
-  // GET /users - Listo të gjithë user-at e tenantit
-  // ============================================
   @Get()
-  @Roles(Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN) // PËRMIRËSIM: Edhe STAFF mund të shohë listën e user-ave (p.sh. klientët e agjencisë)
+  @Roles(Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get all users for current tenant' })
   @ApiResponse({
     status: 200,
@@ -53,9 +50,14 @@ export class UsersController {
     return this.usersService.findAllByTenant(tenantId);
   }
 
-  // ============================================
-  // GET /users/:id - Gjej user-in sipas ID
-  // ============================================
+  @Get('profile/me')
+  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
+  async getProfile(@TenantId() tenantId: string, @Req() req: any) {
+    return this.usersService.findOne(tenantId, req.user.sub);
+  }
+
   @Get(':id')
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get user by ID' })
@@ -69,7 +71,6 @@ export class UsersController {
     @Param('id') id: string,
     @Req() req: any,
   ) {
-    // CUSTOMER dhe STAFF mund të shohin VETËM veten e tyre
     if (
       (req.user.role === Role.CUSTOMER || req.user.role === Role.STAFF) &&
       req.user.sub !== id
@@ -79,11 +80,31 @@ export class UsersController {
     return this.usersService.findOne(tenantId, id);
   }
 
-  // ============================================
-  // POST /users - Krijo user të ri brenda Tenant-it
-  // ============================================
+  @Get(':id/reviews')
+  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all reviews written by a specific user' })
+  @ApiResponse({ status: 200, description: 'Reviews retrieved successfully' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - You can only view your own reviews',
+  })
+  async getReviewsByUser(
+    @TenantId() tenantId: string,
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    // Siguria: Klientët dhe stafi mund të shohin vetëm rishikimet e tyre personale
+    if (
+      (req.user.role === Role.CUSTOMER || req.user.role === Role.STAFF) &&
+      req.user.sub !== id
+    ) {
+      throw new ForbiddenException('You can only view your own reviews');
+    }
+    return this.usersService.findReviewsByUser(tenantId, id);
+  }
+
   @Post()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN) // KORRIGJIM: Lejo ADMIN-in e agjencisë të krijojë punëtorë/klientë
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Create new user for this tenant' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({
@@ -95,9 +116,6 @@ export class UsersController {
     return this.usersService.create(tenantId, dto);
   }
 
-  // ============================================
-  // PATCH /users/:id - Përditëso user-in
-  // ============================================
   @Patch(':id')
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Update user' })
@@ -113,19 +131,16 @@ export class UsersController {
     const isAtLeastAdmin =
       req.user.role === Role.ADMIN || req.user.role === Role.SUPER_ADMIN;
 
-    // 1. CUSTOMER dhe STAFF mund të editojnë VETËM veten e tyre
     if (!isAtLeastAdmin && !isOwner) {
       throw new ForbiddenException('You can only update your own profile');
     }
 
-    // 2. KORRIGJIM I SIGURISË: Vetëm Admin/Super Admin mund të ndryshojnë rolet
     if (dto.role && !isAtLeastAdmin) {
       throw new ForbiddenException(
         'Only Administrators can assign or change roles',
       );
     }
 
-    // 3. Sigurohemi që as Admini nuk i heq dot rolin vetes gabimisht
     if (dto.role && isOwner && req.user.role !== Role.SUPER_ADMIN) {
       throw new ForbiddenException('You cannot change your own role');
     }
@@ -133,11 +148,8 @@ export class UsersController {
     return this.usersService.update(tenantId, id, dto);
   }
 
-  // ============================================
-  // DELETE /users/:id - Fshi user-in
-  // ============================================
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN) // KORRIGJIM: Admini i agjencisë duhet të mund të fshijë një user të tenantit të vet
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Delete user' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({
@@ -147,16 +159,5 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async remove(@TenantId() tenantId: string, @Param('id') id: string) {
     return this.usersService.remove(tenantId, id);
-  }
-
-  // ============================================
-  // GET /users/profile/me - Merr profilin tim aktual
-  // ============================================
-  @Get('profile/me')
-  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
-  async getProfile(@TenantId() tenantId: string, @Req() req: any) {
-    return this.usersService.findOne(tenantId, req.user.sub);
   }
 }

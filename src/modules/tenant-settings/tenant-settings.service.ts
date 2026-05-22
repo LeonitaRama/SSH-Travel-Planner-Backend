@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { BaseCrudService } from '../../common/services/base-crud.service.js';
 import { CreateTenantSettingsDto } from './dto/create-tenant-settings.dto.js';
 import { UpdateTenantSettingsDto } from './dto/update-tenant-settings.dto.js';
-import { TenantSetting } from '@prisma/client';
+import { TenantSettings } from '@prisma/client';
 @Injectable()
 export class TenantSettingsService extends BaseCrudService<
   TenantSettings,
