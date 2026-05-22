@@ -12,18 +12,39 @@ export class HotelsService extends BaseCrudService<
 > {
   constructor(protected prismaService: PrismaService) {
     super(prismaService, {
-      modelName: 'hotel', // Sigurohuni që përputhet me schema.prisma
-      defaultInclude: { destination: true }, // Gjithmonë merr edhe destination-in e lidhur
+      modelName: 'hotel',
+      defaultInclude: { destination: true },
     });
   }
 
-  // Metodë specifike për të gjetur hotelet sipas destination
-  async findByDestination(tenantId: string, destinationId: string) {
+  // SEARCH & FILTERING
+  async findByFilters(
+    tenantId: string,
+    destinationId?: string,
+    rating?: number,
+    maxPrice?: number,
+  ) {
     return this.prismaService.hotel.findMany({
       where: {
         tenantId,
-        destinationId,
+
+        ...(destinationId && {
+          destinationId,
+        }),
+
+        ...(rating && {
+          rating: {
+            gte: rating,
+          },
+        }),
+
+        ...(maxPrice && {
+          pricePerNight: {
+            lte: maxPrice,
+          },
+        }),
       },
+
       include: {
         destination: true,
       },
