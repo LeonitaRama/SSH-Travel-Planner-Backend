@@ -119,6 +119,8 @@ model Hotel {
   bookings    Booking[]
   reviews     Review[]
 
+  travelPackages TravelPackage[]
+
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([destinationId])
@@ -155,12 +157,13 @@ model Flight {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  bookings Booking[]
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+  travelPackages TravelPackage[]
 }
 
 model Booking {
-  id             String   @id @default(uuid())
+   id             String   @id @default(uuid())
   tenantId       String
   userId         String
   destinationId  String
@@ -170,6 +173,7 @@ model Booking {
   numberOfGuests Int
   startDate      DateTime
   endDate        DateTime
+  status         String   @default("PENDING") // SHTOHET FUSHA E STATUSIT (PENDING, CONFIRMED, CANCELLED)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -259,7 +263,7 @@ model Notification {
 }
 
 model TravelPackage {
-  id            String   @id @default(uuid())
+   id            String   @id @default(uuid())
   tenantId      String
   name          String
   description   String?
@@ -272,6 +276,9 @@ model TravelPackage {
 
   tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  hotels  Hotel[]
+  flights Flight[]
 
   @@index([tenantId])
   @@index([destinationId])

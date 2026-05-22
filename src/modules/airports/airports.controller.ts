@@ -75,4 +75,18 @@ export class AirportsController {
   async remove(@TenantId() tenantId: string, @Param('id') id: string) {
     return this.airportsService.remove(tenantId, id);
   }
+
+  @Get(':id/flights/departures')
+  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all departing flights from this airport' })
+  async getDepartures(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.airportsService.findDepartures(tenantId, id);
+  }
+
+  @Get(':id/flights/arrivals')
+  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all arriving flights to this airport' })
+  async getArrivals(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.airportsService.findArrivals(tenantId, id);
+  }
 }

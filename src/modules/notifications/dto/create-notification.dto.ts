@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
 export class CreateNotificationDto {
   @ApiProperty()
@@ -21,4 +21,10 @@ export class CreateNotificationDto {
   @IsString()
   @IsNotEmpty()
   userId!: string;
+
+  // Shto këtë që të njihet nga UpdateNotificationDto automatikisht
+  @ApiProperty({ required: false, default: false })
+  @IsBoolean()
+  @IsOptional()
+  isRead?: boolean;
 }

@@ -83,4 +83,18 @@ export class HotelsController {
   async remove(@TenantId() tenantId: string, @Param('id') id: string) {
     return this.hotelsService.remove(tenantId, id);
   }
+
+  @Get(':id/rooms')
+  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all rooms for a specific hotel' })
+  async findRooms(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.hotelsService.findRoomsByHotel(tenantId, id);
+  }
+
+  @Get(':id/reviews')
+  @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all reviews for a specific hotel' })
+  async findReviews(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.hotelsService.findReviewsByHotel(tenantId, id);
+  }
 }

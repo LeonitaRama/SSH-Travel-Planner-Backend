@@ -9,7 +9,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiSecurity, ApiBearerAuth, ApiTags, ApiOperation, ApiHeader } from '@nestjs/swagger';
+import {
+  ApiSecurity,
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiHeader,
+} from '@nestjs/swagger';
 import { CouponsService } from './coupons.service.js';
 import { CreateCouponDto } from './dto/create-coupon.dto.js';
 import { UpdateCouponDto } from './dto/update-coupon.dto.js';
@@ -22,8 +28,7 @@ import { Role } from '../../common/enums/role.enum.js';
 @ApiTags('Coupons')
 @ApiBearerAuth('JWT-auth')
 @ApiSecurity('tenant-id')
-@ApiHeader({ name: 'x-tenant-id', required: true, description: 'Tenant ID' })
-@Controller('api/v1/coupons')
+@Controller('coupons')
 @UseGuards(AuthGuard('jwt'), RolesGuard, TenantGuard)
 export class CouponsController {
   constructor(private readonly couponsService: CouponsService) {}

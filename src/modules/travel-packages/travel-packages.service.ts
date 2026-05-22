@@ -18,4 +18,64 @@ export class TravelPackagesService extends BaseCrudService<
       },
     });
   }
+
+  async addHotelToPackage(
+    tenantId: string,
+    packageId: string,
+    hotelId: string,
+  ) {
+    return this.prismaService.travelPackage.update({
+      where: { id: packageId, tenantId },
+      data: {
+        hotels: {
+          connect: { id: hotelId },
+        },
+      },
+    });
+  }
+
+  async removeHotelFromPackage(
+    tenantId: string,
+    packageId: string,
+    hotelId: string,
+  ) {
+    return this.prismaService.travelPackage.update({
+      where: { id: packageId, tenantId },
+      data: {
+        hotels: {
+          disconnect: { id: hotelId },
+        },
+      },
+    });
+  }
+
+  async addFlightToPackage(
+    tenantId: string,
+    packageId: string,
+    flightId: string,
+  ) {
+    return this.prismaService.travelPackage.update({
+      where: { id: packageId, tenantId },
+      data: {
+        flights: {
+          connect: { id: flightId },
+        },
+      },
+    });
+  }
+
+  async removeFlightFromPackage(
+    tenantId: string,
+    packageId: string,
+    flightId: string,
+  ) {
+    return this.prismaService.travelPackage.update({
+      where: { id: packageId, tenantId },
+      data: {
+        flights: {
+          disconnect: { id: flightId },
+        },
+      },
+    });
+  }
 }
