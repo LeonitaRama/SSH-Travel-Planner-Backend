@@ -36,6 +36,7 @@ import { ActivitiesModule } from './modules/activities/activities.module.js';
 import { WishlistsModule } from './modules/wishlists/wishlists.module.js';
 import { TenantSettingsModule } from './modules/tenant-settings/tenant-settings.module.js';
 import { CouponsModule } from './modules/coupons/coupons.module.js';
+import { AiModule } from './modules/ai/ai.module.js';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { CouponsModule } from './modules/coupons/coupons.module.js';
     WishlistsModule,
     CouponsModule,
     TenantSettingsModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [
