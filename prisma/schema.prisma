@@ -31,6 +31,7 @@ model Tenant {
   activities     Activity[]
   wishlists      Wishlist[]
   aiChats        AiChat[]
+  coupons        Coupon[]
 }
 
 model User {
@@ -361,4 +362,19 @@ model Wishlist {
   @@unique([userId, destinationId])
   @@index([tenantId])
   @@index([userId])
+}
+
+model Coupon {
+  id        String   @id @default(uuid())
+  tenantId  String
+  code      String // p.sh., "VARA2026"
+  discount  Float // Përqindja e zbritjes, p.sh., 15.0 për 15%
+  isActive  Boolean  @default(true)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
 }

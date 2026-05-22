@@ -34,6 +34,8 @@ import { AirlinesModule } from './modules/airlines/airlines.module.js';
 import { AirportsModule } from './modules/airports/airports.module.js';
 import { ActivitiesModule } from './modules/activities/activities.module.js';
 import { WishlistsModule } from './modules/wishlists/wishlists.module.js';
+import { TenantSettingsModule } from './modules/tenant-settings/tenant-settings.module.js';
+import { CouponsModule } from './modules/coupons/coupons.module.js';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { WishlistsModule } from './modules/wishlists/wishlists.module.js';
     AirportsModule,
     ActivitiesModule,
     WishlistsModule,
+    CouponsModule,
+    TenantSettingsModule,
   ],
   controllers: [AppController],
   providers: [
