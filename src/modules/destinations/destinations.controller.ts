@@ -7,6 +7,7 @@ import {
   Delete,
   Patch,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -40,8 +41,14 @@ export class DestinationsController {
     @TenantId() tenantId: string,
     @Body() dto: CreateDestinationDto,
   ) {
+    console.log('TenantId from decorator:', tenantId);
     return this.destinationsService.create(tenantId, dto);
   }
+  // async create(@Req() req: Request, @Body() dto: CreateDestinationDto) {
+  //   const tenantId = req.headers['tenant-id'] || req.headers['x-tenant-id'];
+  //   console.log('TenantId from decorator:', tenantId);
+  //   return this.destinationsService.create(tenantId as string, dto);
+  // }
 
   @Get()
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
