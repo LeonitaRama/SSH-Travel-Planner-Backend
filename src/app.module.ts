@@ -5,6 +5,7 @@ import {
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller.js';
@@ -52,6 +53,7 @@ import * as redisStore from 'cache-manager-redis-store';
       port: 6379,
       ttl: 6000,
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     TenantsModule,
     UsersModule,
