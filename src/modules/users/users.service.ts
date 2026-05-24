@@ -6,10 +6,11 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { Role } from '../../common/enums/role.enum.js';
 import * as bcrypt from 'bcrypt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService extends BaseCrudService<
-  any,
+  User,
   CreateUserDto,
   UpdateUserDto
 > {
@@ -52,10 +53,9 @@ export class UsersService extends BaseCrudService<
     return this.findAll(tenantId);
   }
 
-async findReviewsByUser(tenantId: string, userId: string) {
-  return this.prismaService.review.findMany({
-    where: { userId, tenantId },
-  });
-}
-
+  async findReviewsByUser(tenantId: string, userId: string) {
+    return this.prismaService.review.findMany({
+      where: { userId, tenantId },
+    });
+  }
 }
