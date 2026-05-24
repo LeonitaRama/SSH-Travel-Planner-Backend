@@ -6,10 +6,11 @@ import { BaseCrudService } from '../../common/services/base-crud.service.js';
 
 import { CreateReviewDto } from './dto/create-review.dto.js';
 import { UpdateReviewDto } from './dto/update-review.dto.js';
+import { Review } from '@prisma/client';
 
 @Injectable()
 export class ReviewsService extends BaseCrudService<
-  any,
+  Review,
   CreateReviewDto,
   UpdateReviewDto
 > {

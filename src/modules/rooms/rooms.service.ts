@@ -6,10 +6,11 @@ import { BaseCrudService } from '../../common/services/base-crud.service.js';
 
 import { CreateRoomDto } from './dto/create-room.dto.js';
 import { UpdateRoomDto } from './dto/update-room.dto.js';
+import { Room } from '@prisma/client';
 
 @Injectable()
 export class RoomsService extends BaseCrudService<
-  any,
+  Room,
   CreateRoomDto,
   UpdateRoomDto
 > {

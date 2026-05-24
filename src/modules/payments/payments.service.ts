@@ -6,10 +6,11 @@ import { BaseCrudService } from '../../common/services/base-crud.service.js';
 
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
 import { UpdatePaymentDto } from './dto/update-payment.dto.js';
+import { Payment } from '@prisma/client';
 
 @Injectable()
 export class PaymentsService extends BaseCrudService<
-  any,
+  Payment,
   CreatePaymentDto,
   UpdatePaymentDto
 > {

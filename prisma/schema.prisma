@@ -15,23 +15,26 @@ model Tenant {
   users         User[]
   refreshTokens RefreshToken[]
 
-  destinations   Destination[]
-  hotels         Hotel[]
-  rooms          Room[]
-  flights        Flight[]
-  bookings       Booking[]
-  bookingItems   BookingItem[]
-  payments       Payment[]
-  auditLogs      AuditLog[]
-  reviews        Review[]
-  notifications  Notification[]
-  travelPackages TravelPackage[]
-  airlines       Airline[]
-  airports       Airport[]
-  activities     Activity[]
-  wishlists      Wishlist[]
-  aiChats        AiChat[]
-  coupons        Coupon[]
+  destinations         Destination[]
+  hotels               Hotel[]
+  rooms                Room[]
+  flights              Flight[]
+  bookings             Booking[]
+  bookingItems         BookingItem[]
+  payments             Payment[]
+  auditLogs            AuditLog[]
+  reviews              Review[]
+  notifications        Notification[]
+  travelPackages       TravelPackage[]
+  airlines             Airline[]
+  airports             Airport[]
+  activities           Activity[]
+  wishlists            Wishlist[]
+  aiChats              AiChat[]
+  coupons              Coupon[]
+  bookingConfirmations BookingConfirmation[]
+  emailLogs            EmailLog[]
+  webhookEvents        WebhookEvent[]
 }
 
 model User {
@@ -163,7 +166,7 @@ model Flight {
 }
 
 model Booking {
-   id             String   @id @default(uuid())
+  id             String   @id @default(uuid())
   tenantId       String
   userId         String
   destinationId  String
@@ -184,8 +187,9 @@ model Booking {
   room        Room?       @relation(fields: [roomId], references: [id])
   flight      Flight?     @relation(fields: [flightId], references: [id])
 
-  bookingItems BookingItem[]
-  payments     Payment[]
+  bookingItems        BookingItem[]
+  payments            Payment[]
+  bookingConfirmation BookingConfirmation?
 }
 
 model BookingItem {
@@ -239,6 +243,7 @@ model Review {
   destinationId String?
   rating        Int
   comment       String
+  aiAnalysis    String?  @map("ai_analysis")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -246,6 +251,111 @@ model Review {
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   hotel       Hotel?       @relation(fields: [hotelId], references: [id])
   destination Destination? @relation(fields: [destinationId], references: [id])
+
+  @@index([tenantId])
+  @@map("reviews")
+}
+
+model BackgroundJob {
+  id          String    @id @default(uuid())
+  jobId       String    @unique // BullMQ job ID
+  queueName   String // booking-queue, email-queue, etc.
+  jobName     String // process-confirmation, send-email, etc.
+  data        Json // Të dhënat e job-it
+  status      JobStatus @default(PENDING)
+  attempts    Int       @default(0)
+  error       String?
+  result      Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  tenantId  String?
+  userId    String?
+  bookingId String?
+
+  @@index([jobId])
+  @@index([queueName])
+  @@index([status])
+  @@index([tenantId])
+}
+
+model BookingConfirmation {
+  id                 String    @id @default(uuid())
+  bookingId          String    @unique
+  tenantId           String
+  confirmedAt        DateTime
+  confirmationNumber String    @unique
+  sentViaEmail       Boolean   @default(false)
+  emailSentAt        DateTime?
+  smsSentAt          DateTime?
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([confirmationNumber])
+}
+
+model EmailLog {
+  id         String      @id @default(uuid())
+  to         String
+  subject    String
+  content    String
+  template   String?
+  status     EmailStatus @default(PENDING)
+  error      String?
+  sentAt     DateTime?
+  retryCount Int         @default(0)
+  tenantId   String
+  userId     String?
+  createdAt  DateTime    @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([tenantId])
+  @@index([createdAt])
+}
+
+model WebhookEvent {
+  id          String        @id @default(uuid())
+  eventType   String // booking.confirmed, payment.received, etc.
+  payload     Json
+  status      WebhookStatus @default(PENDING)
+  response    String?
+  retryCount  Int           @default(0)
+  processedAt DateTime?
+  createdAt   DateTime      @default(now())
+  tenantId    String
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRY
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+  BOUNCED
+}
+
+enum WebhookStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  RETRYING
 }
 
 model Notification {
@@ -263,7 +373,7 @@ model Notification {
 }
 
 model TravelPackage {
-   id            String   @id @default(uuid())
+  id            String   @id @default(uuid())
   tenantId      String
   name          String
   description   String?
