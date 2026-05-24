@@ -37,6 +37,7 @@ import { WishlistsModule } from './modules/wishlists/wishlists.module.js';
 import { TenantSettingsModule } from './modules/tenant-settings/tenant-settings.module.js';
 import { CouponsModule } from './modules/coupons/coupons.module.js';
 import { AiModule } from './modules/ai/ai.module.js';
+import * as redisStore from 'cache-manager-redis-store';
 
 @Module({
   imports: [
@@ -45,8 +46,11 @@ import { AiModule } from './modules/ai/ai.module.js';
       envFilePath: '.env',
     }),
     CacheModule.register({
-      isGlobal: true, // E bën të qasshëm në të gjithë aplikacionin
-      ttl: 60000, // Cache jeton për 60 sekonda
+      isGlobal: true,
+      store: redisStore,
+      host: 'localhost',
+      port: 6379,
+      ttl: 6000,
     }),
     PrismaModule,
     TenantsModule,

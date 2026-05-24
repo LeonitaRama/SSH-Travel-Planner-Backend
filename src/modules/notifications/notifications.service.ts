@@ -3,10 +3,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { BaseCrudService } from '../../common/services/base-crud.service.js';
 import { CreateNotificationDto } from './dto/create-notification.dto.js';
 import { UpdateNotificationDto } from './dto/update-notification.dto.js';
+import { Notification } from '@prisma/client';
 
 @Injectable()
 export class NotificationsService extends BaseCrudService<
-  any,
+  Notification,
   CreateNotificationDto,
   UpdateNotificationDto
 > {

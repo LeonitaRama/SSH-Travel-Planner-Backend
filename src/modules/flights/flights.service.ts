@@ -6,10 +6,11 @@ import { BaseCrudService } from '../../common/services/base-crud.service.js';
 
 import { CreateFlightDto } from './dto/create-flight.dto.js';
 import { UpdateFlightDto } from './dto/update-flight.dto.js';
+import { Flight } from '@prisma/client';
 
 @Injectable()
 export class FlightsService extends BaseCrudService<
-  any,
+  Flight,
   CreateFlightDto,
   UpdateFlightDto
 > {

@@ -3,10 +3,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { BaseCrudService } from '../../common/services/base-crud.service.js';
 import { CreateBookingDto } from './dto/create-booking.dto.js';
 import { UpdateBookingDto } from './dto/update-booking.dto.js';
+import { Booking } from '@prisma/client';
 
 @Injectable()
 export class BookingsService extends BaseCrudService<
-  any,
+  Booking,
   CreateBookingDto,
   UpdateBookingDto
 > {
