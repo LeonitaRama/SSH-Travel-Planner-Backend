@@ -4,6 +4,9 @@ import { BaseCrudService } from '../../common/services/base-crud.service.js';
 import { CreateBookingDto } from './dto/create-booking.dto.js';
 import { UpdateBookingDto } from './dto/update-booking.dto.js';
 import { Booking } from '@prisma/client';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { BackgroundJobsService } from '../background-jobs/background-jobs.service.js';
 
 @Injectable()
 export class BookingsService extends BaseCrudService<
@@ -11,7 +14,14 @@ export class BookingsService extends BaseCrudService<
   CreateBookingDto,
   UpdateBookingDto
 > {
-  constructor(protected prismaService: PrismaService) {
+  constructor(
+    protected prismaService: PrismaService,
+
+    @InjectQueue('booking-queue')
+    private bookingQueue: Queue,
+
+    private backgroundJobsService: BackgroundJobsService,
+  ) {
     super(prismaService, {
       modelName: 'booking',
       defaultInclude: {
@@ -64,5 +74,50 @@ export class BookingsService extends BaseCrudService<
         tenantId,
       },
     });
+  }
+
+  async create(tenantId: string, dto: CreateBookingDto) {
+    const booking = await super.create(tenantId, dto);
+
+    const user = await this.prismaService.user.findUnique({
+      where: { id: dto.userId },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const job = await this.bookingQueue.add(
+      'process-confirmation',
+      {
+        bookingId: booking.id,
+        tenantId,
+        userId: dto.userId,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      },
+    );
+
+    await this.bookingQueue.add('send-booking-confirmation', {
+      email: user.email,
+      bookingId: booking.id,
+    });
+
+    await this.backgroundJobsService.logJob(
+      String(job.id),
+      'booking-queue',
+      'process-confirmation',
+      job.data,
+      tenantId,
+      dto.userId,
+      booking.id,
+    );
+
+    return booking;
   }
 }
