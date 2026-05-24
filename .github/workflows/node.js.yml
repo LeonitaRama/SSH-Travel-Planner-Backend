@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: ['main', 'develop']
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ['main', 'develop']
 
 env:
   NODE_ENV: test
@@ -239,8 +239,8 @@ notify:
               "${{ needs.test.result }}" != "success" || \
               "${{ needs.test-e2e.result }}" != "success" || \
               "${{ needs.security.result }}" != "success" ]]; then
-          echo "❌ Pipeline FAILED"
+          echo "Pipeline FAILED"
           exit 1
         else
-          echo "✅ Pipeline PASSED"
+          echo "Pipeline PASSED"
         fi
