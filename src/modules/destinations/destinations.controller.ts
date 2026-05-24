@@ -37,18 +37,18 @@ export class DestinationsController {
   @Post()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF)
   @ApiOperation({ summary: 'Create a new destination' })
-  // async create(
-  //   @TenantId() tenantId: string,
-  //   @Body() dto: CreateDestinationDto,
-  // ) {
-  //   console.log('TenantId from decorator:', tenantId);
-  //   return this.destinationsService.create(tenantId, dto);
-  // }
-  async create(@Req() req: Request, @Body() dto: CreateDestinationDto) {
-    const tenantId = req.headers['tenant-id'] || req.headers['x-tenant-id'];
+  async create(
+    @TenantId() tenantId: string,
+    @Body() dto: CreateDestinationDto,
+  ) {
     console.log('TenantId from decorator:', tenantId);
-    return this.destinationsService.create(tenantId as string, dto);
+    return this.destinationsService.create(tenantId, dto);
   }
+  // async create(@Req() req: Request, @Body() dto: CreateDestinationDto) {
+  //   const tenantId = req.headers['tenant-id'] || req.headers['x-tenant-id'];
+  //   console.log('TenantId from decorator:', tenantId);
+  //   return this.destinationsService.create(tenantId as string, dto);
+  // }
 
   @Get()
   @Roles(Role.CUSTOMER, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN)
