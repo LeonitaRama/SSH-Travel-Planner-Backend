@@ -43,21 +43,17 @@ jobs:
         continue-on-error: true
 
   build:
-    name: Build (Node ${{ matrix.node-version }})
+    name: Build
     runs-on: ubuntu-latest
     needs: lint
-
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
           cache: 'npm'
 
       - name: Install dependencies
@@ -68,14 +64,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Upload build artifacts
-        if: matrix.node-version == '22.x'
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 1
 
   test:
     name: Unit & Integration Tests
@@ -101,11 +89,6 @@ jobs:
         image: redis:7-alpine
         ports:
           - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -125,7 +108,7 @@ jobs:
       - name: Run Prisma migrations
         run: npx prisma migrate deploy
 
-      - name: Run tests with coverage
+      - name: Run tests
         run: npm run test:cov
 
       - name: Upload coverage report
@@ -133,17 +116,6 @@ jobs:
         with:
           name: coverage
           path: coverage/
-          retention-days: 7
-
-      - name: Coverage summary
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        with:
-          filename: coverage/cobertura-coverage.xml
-          badge: true
-          fail_below_min: false
-          format: markdown
-          output: both
-        continue-on-error: true
 
   test-e2e:
     name: E2E Tests
@@ -159,21 +131,11 @@ jobs:
           POSTGRES_DB: testdb_e2e
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
       redis:
         image: redis:7-alpine
         ports:
           - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb_e2e
@@ -225,22 +187,22 @@ jobs:
         run: npx depcheck
         continue-on-error: true
 
-notify:
-  name: Notify Status
-  runs-on: ubuntu-latest
-  needs: [lint, build, test, test-e2e, security]
-  if: always()
+  notify:
+    name: Notify Status
+    runs-on: ubuntu-latest
+    needs: [lint, build, test, test-e2e, security]
+    if: always()
 
-  steps:
-    - name: Check pipeline status
-      run: |
-        if [[ "${{ needs.lint.result }}" != "success" || \
-              "${{ needs.build.result }}" != "success" || \
-              "${{ needs.test.result }}" != "success" || \
-              "${{ needs.test-e2e.result }}" != "success" || \
-              "${{ needs.security.result }}" != "success" ]]; then
-          echo "Pipeline FAILED"
-          exit 1
-        else
-          echo "Pipeline PASSED"
-        fi
+    steps:
+      - name: Check pipeline status
+        run: |
+          if [[ "${{ needs.lint.result }}" != "success" || \
+                "${{ needs.build.result }}" != "success" || \
+                "${{ needs.test.result }}" != "success" || \
+                "${{ needs.test-e2e.result }}" != "success" || \
+                "${{ needs.security.result }}" != "success" ]]; then
+            echo "Pipeline FAILED"
+            exit 1
+          else
+            echo "Pipeline PASSED"
+          fi
