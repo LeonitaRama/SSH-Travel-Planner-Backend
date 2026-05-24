@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
+import { PrismaService } from '../src/modules/prisma/prisma.service.js';
 
 jest.mock('@nestjs/bullmq', () => ({
   InjectQueue: jest.fn(),
@@ -11,10 +12,9 @@ jest.mock('@nestjs/bullmq', () => ({
   BullModule: { registerQueue: jest.fn() },
 }));
 
-describe('Users API (e2e)', () => {
+describe('Auth System (e2e)', () => {
   let app: INestApplication;
   let authToken: string;
-  let userId: string;
   const tenantId = 'd1104503-5a1a-410c-ab00-4dac707ddba0';
 
   beforeAll(async () => {
@@ -23,33 +23,35 @@ describe('Users API (e2e)', () => {
     }).compile();
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
 
-    const loginRes = await request(app.getHttpServer())
+  it('POST /auth/login - should login and return token', async () => {
+    const response = await request(app.getHttpServer())
       .post('/auth/login')
       .set('x-tenant-id', tenantId)
       .send({ email: 'admin@travel.com', password: 'admin123' })
       .expect(200);
-    authToken = loginRes.body.access_token;
-    userId = loginRes.body.user.id;
+    authToken = response.body.access_token;
+    expect(authToken).toBeDefined();
   });
 
-  it('/users (GET) - should return list of users', () => {
+  it('GET /auth/profile - should return profile with valid token', () => {
     return request(app.getHttpServer())
-      .get('/users')
+      .get('/auth/profile')
       .set('Authorization', `Bearer ${authToken}`)
-      .set('tenant-id', tenantId)
       .expect(200);
   });
 
-  it('/users/:id (GET) - should return specific user', () => {
-    return request(app.getHttpServer())
-      .get(`/users/${userId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .set('tenant-id', tenantId)
-      .expect(200);
+  it('GET /auth/profile - should return 401 without token', () => {
+    return request(app.getHttpServer()).get('/auth/profile').expect(401);
   });
 
+  // ✅ KËTU VENDOS afterAll (pas të gjitha testeve)
   afterAll(async () => {
+    const prisma = app.get(PrismaService);
+    await prisma.$disconnect();
     await app.close();
+    // Vonesë e vogël për të lejuar mbylljen e operacioneve asinkrone
+    await new Promise((resolve) => setTimeout(resolve, 100));
   });
 });
