@@ -225,20 +225,22 @@ jobs:
         run: npx depcheck
         continue-on-error: true
 
-  notify:
-    name: Notify Status
-    runs-on: ubuntu-latest
-    needs: [lint, build, test, test-e2e, security]
-    if: always()
+notify:
+  name: Notify Status
+  runs-on: ubuntu-latest
+  needs: [lint, build, test, test-e2e, security]
+  if: always()
 
-    steps:
-      - name: Check pipeline status
-        run: |
-          if [[ "${{ needs.lint.result }}" == "failure" || \
-                "${{ needs.build.result }}" == "failure" || \
-                "${{ needs.test.result }}" == "failure" ]]; then
-            echo "❌ Pipeline FAILED"
-            exit 1
-          else
-            echo "✅ Pipeline PASSED"
-          fi
+  steps:
+    - name: Check pipeline status
+      run: |
+        if [[ "${{ needs.lint.result }}" != "success" || \
+              "${{ needs.build.result }}" != "success" || \
+              "${{ needs.test.result }}" != "success" || \
+              "${{ needs.test-e2e.result }}" != "success" || \
+              "${{ needs.security.result }}" != "success" ]]; then
+          echo "❌ Pipeline FAILED"
+          exit 1
+        else
+          echo "✅ Pipeline PASSED"
+        fi
