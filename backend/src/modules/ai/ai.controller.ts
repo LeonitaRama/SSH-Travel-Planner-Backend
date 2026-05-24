@@ -6,7 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { AiService } from '../ai/ai.service.js';
+import { AiService } from './ai.service.js';
 import { CreateAiRecommendationDto } from './dto/create-ai-recommendation.dto.js';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
