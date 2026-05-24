@@ -39,6 +39,7 @@ import { TenantSettingsModule } from './modules/tenant-settings/tenant-settings.
 import { CouponsModule } from './modules/coupons/coupons.module.js';
 import { AiModule } from './modules/ai/ai.module.js';
 import * as redisStore from 'cache-manager-redis-store';
+import { AdminModule } from './modules/admin/admin.module.js';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import * as redisStore from 'cache-manager-redis-store';
     CouponsModule,
     TenantSettingsModule,
     AiModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
