@@ -1,3 +1,4 @@
+// src/modules/admin/admin.controller.spec.ts
 import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminController } from './admin.controller.js';
@@ -21,7 +22,7 @@ describe('AdminController', () => {
           provide: AdminService,
           useValue: {
             getGlobalStats: jest.fn(),
-            getTenantStats: jest.fn(),
+            getStatsForTenant: jest.fn(), // ✅ Fixed: Match actual service method used in controller
             getBookingTrend: jest.fn(),
           },
         },
@@ -55,7 +56,6 @@ describe('AdminController', () => {
       expect(result).toEqual(stats);
     });
   });
-
   describe('getTenantStats', () => {
     it('should return stats for a specific tenant', async () => {
       const stats = {
@@ -65,9 +65,18 @@ describe('AdminController', () => {
         destinations: 3,
         revenue: 2000,
       };
-      adminService.getTenantStats.mockResolvedValue(stats as any);
-      const result = await controller.getTenantStats('1');
-      expect(adminService.getTenantStats).toHaveBeenCalledWith('1');
+
+      const mockRequest = {
+        headers: {
+          'x-tenant-id': '1',
+        },
+      } as any;
+
+      (adminService as any).getStatsForTenant.mockResolvedValue(stats);
+
+      const result = await controller.getTenantStats(mockRequest);
+
+      expect(adminService.getStatsForTenant).toHaveBeenCalledWith('1');
       expect(result).toEqual(stats);
     });
   });

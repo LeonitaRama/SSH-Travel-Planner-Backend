@@ -97,11 +97,11 @@ export class AppModule implements NestModule {
       .apply(LoggingMiddleware, RateLimitMiddleware)
       .exclude(
         { path: '/', method: RequestMethod.GET },
-        { path: 'api', method: RequestMethod.GET },
-        { path: 'api/*path', method: RequestMethod.GET },
-        { path: 'api/v1/tenants', method: RequestMethod.POST },
-        { path: 'api/v1/tenants', method: RequestMethod.GET },
-        { path: 'api/v1/tenants/slug/:slug', method: RequestMethod.GET },
+        { path: '', method: RequestMethod.GET },
+        { path: '/*path', method: RequestMethod.GET },
+        { path: '/tenants', method: RequestMethod.POST },
+        { path: '/tenants', method: RequestMethod.GET },
+        { path: '/tenants/slug/:slug', method: RequestMethod.GET },
         { path: 'auth/register', method: RequestMethod.POST },
         { path: 'auth/login', method: RequestMethod.POST },
         { path: 'auth/refresh-token', method: RequestMethod.POST },

@@ -1,3 +1,4 @@
+// src/modules/admin/admin.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -34,13 +35,36 @@ export class AdminService {
     };
   }
 
-  async getTenantStats(tenantId: string) {
+  // Metoda e re për statistikat e tenant-it
+  async getStatsForTenant(tenantId: string) {
     const [
-      users,
-      bookings,
+      totalUsers,
+      totalBookings,
+      activeBookings,
+      cancelledBookings,
       revenueAgg,
-      destinations,
     ] = await Promise.all([
+      this.prisma.user.count({ where: { tenantId } }),
+      this.prisma.booking.count({ where: { tenantId } }),
+      this.prisma.booking.count({ where: { tenantId, status: 'CONFIRMED' } }),
+      this.prisma.booking.count({ where: { tenantId, status: 'CANCELLED' } }),
+      this.prisma.payment.aggregate({
+        where: { tenantId },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    return {
+      totalUsers,
+      totalBookings,
+      activeBookings,
+      cancelledBookings,
+      totalRevenue: revenueAgg._sum.amount || 0,
+    };
+  }
+
+  async getTenantStats(tenantId: string) {
+    const [users, bookings, revenueAgg, destinations] = await Promise.all([
       this.prisma.user.count({ where: { tenantId } }),
       this.prisma.booking.count({ where: { tenantId } }),
       this.prisma.payment.aggregate({

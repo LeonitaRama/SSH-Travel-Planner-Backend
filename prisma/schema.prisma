@@ -111,7 +111,7 @@ model Hotel {
   rating        Float?
   pricePerNight Float
   imageUrl      String?
-  destinationId String
+  destinationId String 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -455,14 +455,19 @@ model AiChat {
   @@index([userId])
 }
 
-model TenantSettings {
-  id       String  @id @default(uuid())
-  tenantId String  @unique
-  theme    String?
-  language String  @default("en")
 
-  currency String @default("EUR")
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+model TenantSettings {
+  id        String   @id @default(uuid())
+  tenantId  String   @unique
+  theme     String   @default("light")
+  language  String   @default("en")
+  currency  String   @default("EUR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }
 
 model Wishlist {
