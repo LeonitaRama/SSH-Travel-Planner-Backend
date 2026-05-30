@@ -1,3 +1,4 @@
+// src/modules/tenant-settings/tenant-settings.service.ts
 import { Inject, Injectable } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
@@ -16,7 +17,6 @@ export class TenantSettingsService extends BaseCrudService<
 > {
   constructor(
     protected prismaService: PrismaService,
-
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
   ) {
@@ -35,11 +35,58 @@ export class TenantSettingsService extends BaseCrudService<
       return cached;
     }
 
-    const settings = await this.prismaService.tenantSettings.findUnique({
+    let settings = await this.prismaService.tenantSettings.findUnique({
       where: { tenantId },
     });
 
+    // Nëse nuk ekzistojnë settings, krijo default
+    if (!settings) {
+      settings = await this.prismaService.tenantSettings.create({
+        data: {
+          tenantId,
+          theme: 'light',
+          language: 'en',
+          currency: 'EUR',
+        },
+      });
+    }
+
     await this.cacheManager.set(cacheKey, settings, 300000); // 5 min
+
+    return settings;
+  }
+
+  async updateSettings(tenantId: string, dto: UpdateTenantSettingsDto) {
+    // Gjej settings ekzistues
+    let settings = await this.prismaService.tenantSettings.findUnique({
+      where: { tenantId },
+    });
+
+    // Nëse nuk ekziston, krijo
+    if (!settings) {
+      settings = await this.prismaService.tenantSettings.create({
+        data: {
+          tenantId,
+          theme: dto.theme || 'light',
+          language: dto.language || 'en',
+          currency: dto.currency || 'EUR',
+        },
+      });
+    } else {
+      // Update ekzistues - përdor update direkt me id
+      settings = await this.prismaService.tenantSettings.update({
+        where: { id: settings.id },
+        data: {
+          ...(dto.theme !== undefined && { theme: dto.theme }),
+          ...(dto.language !== undefined && { language: dto.language }),
+          ...(dto.currency !== undefined && { currency: dto.currency }),
+        },
+      });
+    }
+
+    // Fshi cache-in
+    const cacheKey = `tenant-settings-${tenantId}`;
+    await this.cacheManager.del(cacheKey);
 
     return settings;
   }
