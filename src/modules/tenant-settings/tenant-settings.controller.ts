@@ -1,3 +1,4 @@
+// src/modules/tenant-settings/tenant-settings.controller.ts
 import { Controller, Get, Body, Patch, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -5,7 +6,7 @@ import {
   ApiBearerAuth,
   ApiTags,
   ApiOperation,
-  ApiHeader,
+  ApiResponse,
 } from '@nestjs/swagger';
 import { TenantSettingsService } from './tenant-settings.service.js';
 import { UpdateTenantSettingsDto } from './dto/update-tenant-settings.dto.js';
@@ -24,20 +25,22 @@ export class TenantSettingsController {
   constructor(private readonly settingsService: TenantSettingsService) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CUSTOMER)
   @ApiOperation({ summary: 'Get settings for current tenant' })
+  @ApiResponse({ status: 200, description: 'Settings retrieved successfully' })
   async getSettings(@TenantId() tenantId: string) {
     return this.settingsService.findSettings(tenantId);
   }
 
   @Patch()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Update settings for current tenant' })
+  @ApiOperation({ summary: 'Update settings for current tenant (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Settings updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
   async update(
     @TenantId() tenantId: string,
     @Body() dto: UpdateTenantSettingsDto,
   ) {
-    // Përdorim upsert që nëse nuk ekziston fare blloku i settings, ta krijojë automatikisht
-    return this.settingsService.update(tenantId, tenantId, dto);
+    return this.settingsService.updateSettings(tenantId, dto);
   }
 }

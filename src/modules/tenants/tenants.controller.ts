@@ -25,7 +25,8 @@ import { UpdateTenantDto } from './dto/update-tenant.dto.js';
 
 @ApiBearerAuth('JWT-auth')
 // Këtu u hoq @ApiSecurity('tenant-id') sepse Super Admin-i menaxhon krejt sistemin global, nuk i duhet x-tenant-id në header për këto operacione
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+// @UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('tenants')
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}

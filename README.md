@@ -8,6 +8,8 @@ npx prisma db seed
 
 npm run start:dev
 
+d1104503-5a1a-410c-ab00-4dac707ddba0
+
 92406f9b-94b5-400e-9b53-f98b0174087a
 Default Travel Agency
 tenant1
