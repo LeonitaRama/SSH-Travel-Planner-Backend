@@ -307,9 +307,5 @@ Sistemi përfshin:
 - Mobile app support
 
 ## Author
-Developed as part of the SSH Travel Planner project.
-
-Backend implemented using:
-- NestJS
-- Prisma ORM
-- PostgreSQL
+Leonita Rama
+Liridona Kurrumeli
