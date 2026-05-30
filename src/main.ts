@@ -1,4 +1,3 @@
-// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
@@ -9,19 +8,13 @@ import { PrismaService } from './modules/prisma/prisma.service.js';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Konfigurimi i CORS - vetëm NJË herë
   app.enableCors({
-
-    origin: true,
+    origin: ['http://localhost:5173', 'http://localhost:3000'], // Frontend URL-të
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-tenant-id'],
     exposedHeaders: ['Authorization'],
-
-    origin: ['http://localhost:5173', 'http://localhost:3000'], // Vendos URL-në e React-it tënd
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'], // Lejo x-tenant-id dhe Bearer tokens
-
   });
 
   app.setGlobalPrefix('');
@@ -75,7 +68,8 @@ async function bootstrap() {
   });
 
   await app.listen(3000);
-  console.log(`Server running on http://localhost:3000`);
-  console.log(`Swagger docs: http://localhost:3000/api`);
+  console.log(`🚀 Server running on http://localhost:3000`);
+  console.log(`📚 Swagger docs: http://localhost:3000/api`);
 }
+
 bootstrap();
