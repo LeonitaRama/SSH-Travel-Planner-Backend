@@ -1,9 +1,9 @@
-// src/modules/admin/admin.controller.spec.ts
 import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminController } from './admin.controller.js';
 import { AdminService } from './admin.service.js';
 import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { TenantGuard } from '../../common/guards/tenant.guard.js'; // ← shto
 import { AuthGuard } from '@nestjs/passport';
 
 jest.mock('@nestjs/passport', () => ({
@@ -22,13 +22,15 @@ describe('AdminController', () => {
           provide: AdminService,
           useValue: {
             getGlobalStats: jest.fn(),
-            getStatsForTenant: jest.fn(), // ✅ Fixed: Match actual service method used in controller
+            getStatsForTenant: jest.fn(),
             getBookingTrend: jest.fn(),
           },
         },
       ],
     })
       .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TenantGuard) // ← shto këtë bllok
       .useValue({ canActivate: () => true })
       .compile();
 
@@ -56,6 +58,7 @@ describe('AdminController', () => {
       expect(result).toEqual(stats);
     });
   });
+
   describe('getTenantStats', () => {
     it('should return stats for a specific tenant', async () => {
       const stats = {
@@ -72,10 +75,9 @@ describe('AdminController', () => {
         },
       } as any;
 
-      (adminService as any).getStatsForTenant.mockResolvedValue(stats);
+      adminService.getStatsForTenant.mockResolvedValue(stats as any);
 
       const result = await controller.getTenantStats(mockRequest);
-
       expect(adminService.getStatsForTenant).toHaveBeenCalledWith('1');
       expect(result).toEqual(stats);
     });
