@@ -15,7 +15,6 @@ import {
   ApiBearerAuth,
   ApiTags,
   ApiOperation,
-  ApiHeader,
 } from '@nestjs/swagger';
 import { DestinationsService } from './destinations.service.js';
 import { CreateDestinationDto } from './dto/create-destination.dto.js';

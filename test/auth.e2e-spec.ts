@@ -15,7 +15,7 @@ jest.mock('@nestjs/bullmq', () => ({
 describe('Auth System (e2e)', () => {
   let app: INestApplication;
   let authToken: string;
-  const tenantId = 'd1104503-5a1a-410c-ab00-4dac707ddba0';
+  const tenantId = '682f606f-27c9-48f9-a615-385d9735dd51';
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,11 +29,15 @@ describe('Auth System (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
       .set('x-tenant-id', tenantId)
-      .send({ email: 'admin@travel.com', password: 'admin123' })
-      .expect(200);
+      .send({ email: 'admin@travel.com', password: 'admin123' });
+
+    // Kjo do të na tregojë saktësisht pse po kthen 401
+    console.log('GABIMI NGA SERVERI (AUTH LOGIN):', response.body);
+
+    expect(response.status).toBe(200);
     authToken = response.body.access_token;
     expect(authToken).toBeDefined();
-  });
+  }); // <-- Kjo kllapë mungonte!
 
   it('GET /auth/profile - should return profile with valid token', () => {
     return request(app.getHttpServer())
@@ -46,12 +50,10 @@ describe('Auth System (e2e)', () => {
     return request(app.getHttpServer()).get('/auth/profile').expect(401);
   });
 
-  // ✅ KËTU VENDOS afterAll (pas të gjitha testeve)
   afterAll(async () => {
     const prisma = app.get(PrismaService);
     await prisma.$disconnect();
     await app.close();
-    // Vonesë e vogël për të lejuar mbylljen e operacioneve asinkrone
     await new Promise((resolve) => setTimeout(resolve, 100));
   });
 });
