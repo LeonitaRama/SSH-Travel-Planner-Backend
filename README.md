@@ -1,4 +1,6 @@
 # SSH-Travel-Planner-Backend
+SSH Travel Planner API
+## Overview
 
 SSH Travel Planner API
 
